@@ -1,0 +1,58 @@
+name: Draft release
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  draft-release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    outputs:
+      tag_name: ${{ steps.release-draft.outputs.tag_name }}
+      version: ${{ steps.release-draft.outputs.resolved_version }}
+      changelog: ${{ steps.release-draft.outputs.body }}
+    steps:
+      - name: Checkout main branch
+        uses: actions/checkout@v4
+
+      - name: Run Release Drafter
+        id: release-draft
+        uses: release-drafter/release-drafter@v6
+        with:
+          config-name: release-drafter.yml
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+
+  bump-version:
+    runs-on: ubuntu-latest
+    needs: draft-release
+    if: ${{ needs.draft-release.outputs.version }}
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Checkout main branch
+        uses: actions/checkout@v4
+
+      - name: Bump version
+        run: |
+          version="${{ needs.draft-release.outputs.version }}"
+          echo "Preparing release for version $version"
+          .github/bump.sh "$version"
+
+      - name: Validate gemspec
+        run: ruby -e 'spec = Gem::Specification.load("jekyll-awesome-nav.gemspec"); abort("missing version") unless spec.version'
+
+      - name: Create Draft Pull Request
+        uses: peter-evans/create-pull-request@v8
+        with:
+          commit-message: "Bump version to ${{ needs.draft-release.outputs.tag_name }}"
+          branch: release/draft
+          title: "Bump to version ${{ needs.draft-release.outputs.tag_name }}"
+          body: |
+            This PR bumps the version to `${{ needs.draft-release.outputs.tag_name }}`.
+          token: ${{ secrets.PR_TOKEN }}
