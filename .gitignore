@@ -1,0 +1,12 @@
+/.bundle/
+/.yardoc
+/_yardoc/
+/coverage/
+/doc/
+/pkg/
+/spec/reports/
+/tmp/
+/.jekyll-cache/
+Gemfile.lock
+/.ruby-lsp/
+/_site/

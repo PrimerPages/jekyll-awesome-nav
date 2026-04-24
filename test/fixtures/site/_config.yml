@@ -1,0 +1,9 @@
+title: Awesome Nav Fixture
+permalink: pretty
+plugins:
+  - jekyll-awesome-nav
+awesome_nav:
+  enabled: true
+  root: docs
+  nav_filename: _nav.yml
+collections: {}

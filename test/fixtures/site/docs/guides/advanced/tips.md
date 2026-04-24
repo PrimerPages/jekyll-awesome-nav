@@ -1,0 +1,5 @@
+---
+title: Tips
+---
+
+Advanced tips.

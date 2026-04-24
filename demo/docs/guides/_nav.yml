@@ -1,0 +1,7 @@
+- title: Guides Hub
+  url: /docs/guides/
+  children:
+    - title: Install Guide
+      url: /docs/guides/install/
+    - title: Configuration
+      url: /docs/guides/config/

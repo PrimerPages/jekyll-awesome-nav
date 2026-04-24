@@ -1,0 +1,43 @@
+theme: jekyll-theme-profile
+title: Jekyll Awesome Nav
+description: Folder-based navigation for Jekyll with automatic generation and local subtree overrides.
+repository: PrimerPages/jekyll-awesome-nav
+permalink: pretty
+style: appbar
+repo_info: true
+user_metadata: false
+profile_link: false
+nav:
+  - name: Overview
+    url: /
+  - name: Docs Home
+    url: /docs/
+  - name: Getting Started
+    url: /docs/getting-started/
+links:
+  - name: Source Code
+    url: https://github.com/PrimerPages/jekyll-awesome-nav
+    octicon: repo
+  - name: README
+    url: https://github.com/PrimerPages/jekyll-awesome-nav#readme
+    octicon: book
+  - name: Demo Docs
+    url: /docs/
+    octicon: file
+plugins:
+  - jekyll-seo-tag
+  - jekyll-awesome-nav
+awesome_nav:
+  enabled: true
+  root: docs
+  nav_filename: _nav.yml
+markdown: kramdown
+defaults:
+  - scope:
+      path: ""
+    values:
+      layout: page
+  - scope:
+      path: "docs"
+    values:
+      layout: docs
