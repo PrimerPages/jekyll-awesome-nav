@@ -14,16 +14,6 @@ nav:
     url: /docs/
   - name: Getting Started
     url: /docs/getting-started/
-links:
-  - name: Source Code
-    url: https://github.com/PrimerPages/jekyll-awesome-nav
-    octicon: repo
-  - name: README
-    url: https://github.com/PrimerPages/jekyll-awesome-nav#readme
-    octicon: book
-  - name: Demo Docs
-    url: /docs/
-    octicon: file
 plugins:
   - jekyll-seo-tag
   - jekyll-awesome-nav
@@ -40,4 +30,4 @@ defaults:
   - scope:
       path: "docs"
     values:
-      layout: docs
+      layout: awesome_nav_demo

@@ -1,0 +1,95 @@
+name: Release artifacts
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Release version to publish or test (for example, 0.1.0)"
+        required: true
+        type: string
+      dry-run:
+        description: "Build and validate without publishing"
+        required: false
+        default: true
+        type: boolean
+
+jobs:
+  build-gem:
+    name: Build gem
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1.305.0
+
+      - name: Check release version matches
+        shell: bash
+        env:
+          RELEASE_VERSION: ${{ github.event.release.tag_name || inputs.version }}
+        run: |
+          VERSION="$(ruby -Ilib -rjekyll/awesome_nav/version -e 'puts Jekyll::AwesomeNav::VERSION')"
+          RELEASE_VERSION="${RELEASE_VERSION#v}"
+          if [ "$VERSION" != "$RELEASE_VERSION" ]; then
+            echo "Version from gem: $VERSION"
+            echo "Version from release: $RELEASE_VERSION"
+            echo "Versions do not match!"
+            exit 1
+          fi
+
+      - name: Build gem
+        run: |
+          mkdir -p pkg
+          VERSION="$(ruby -Ilib -rjekyll/awesome_nav/version -e 'puts Jekyll::AwesomeNav::VERSION')"
+          gem build jekyll-awesome-nav.gemspec --output "pkg/jekyll-awesome-nav-${VERSION}.gem"
+
+      - name: Upload built gem artifact
+        uses: actions/upload-artifact@v7.0.1
+        with:
+          name: built-gem
+          path: pkg/*.gem
+          if-no-files-found: error
+          retention-days: 7
+
+  publish-gem:
+    name: Publish gem
+    needs: [build-gem]
+    runs-on: ubuntu-latest
+    environment: release-gem
+    permissions:
+      contents: read
+      id-token: write
+      attestations: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1.305.0
+
+      - name: Download built gem artifact
+        uses: actions/download-artifact@v8.0.1
+        with:
+          name: built-gem
+          path: pkg
+
+      - name: Configure RubyGems credentials
+        if: ${{ github.event_name == 'release' || !inputs.dry-run }}
+        uses: rubygems/configure-rubygems-credentials@v1.0.0
+
+      - name: Validate gem artifact
+        if: ${{ inputs.dry-run }}
+        run: gem specification pkg/*.gem name
+
+      - name: Publish gem
+        if: ${{ github.event_name == 'release' || !inputs.dry-run }}
+        run: gem push pkg/*.gem

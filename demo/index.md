@@ -13,7 +13,7 @@ links:
     url: https://github.com/PrimerPages/jekyll-awesome-nav
     octicon: mark-github
   - name: Read the README
-    url: https://github.com/PrimerPages/jekyll-awesome-nav#readme
+    url: https://github.com/PrimerPages/jekyll-awesome-nav/blob/main/README.md
     octicon: book
 ---
 

@@ -1,0 +1,94 @@
+name: CI jekyll plugin
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    name: RuboCop Lint
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+
+      - name: Install dependencies
+        run: bundle install
+
+      - name: Run RuboCop
+        run: bundle exec rubocop
+
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        ruby: ["3.2", "3.3", "3.4"]
+        jekyll: ["3.10.0", "4.3.4", "4.4.0", "4.4.1"]
+        include:
+          - ruby: "3.3.4"
+            jekyll: "3.10.0"
+    name: Test Ruby ${{ matrix.ruby }} / Jekyll ${{ matrix.jekyll }}
+    env:
+      JEKYLL_VERSION: ${{ matrix.jekyll }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ matrix.ruby }}
+          bundler-cache: true
+
+      - name: Run tests
+        run: .github/test.sh
+
+      - name: Show installed gems
+        if: failure()
+        run: bundle list
+
+  integration:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        ruby: ["3.2", "3.3", "3.4"]
+        jekyll: ["3.10.0", "4.3.4", "4.4.0", "4.4.1"]
+        include:
+          - ruby: "3.3.4"
+            jekyll: "3.10.0"
+    name: Build Ruby ${{ matrix.ruby }} / Jekyll ${{ matrix.jekyll }}
+    env:
+      JEKYLL_VERSION: ${{ matrix.jekyll }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ matrix.ruby }}
+          bundler-cache: true
+
+      - name: Build demo site
+        run: .github/build.sh
+
+      - name: Show installed gems
+        if: failure()
+        run: bundle list
+
+  ci_success:
+    runs-on: ubuntu-latest
+    needs: [lint, test, integration]
+    steps:
+      - name: Confirm all dependencies succeeded
+        run: echo "All matrix and lint tests passed successfully."

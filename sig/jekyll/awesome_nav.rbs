@@ -1,5 +1,0 @@
-module Jekyll
-  module AwesomeNav
-    VERSION: String
-  end
-end

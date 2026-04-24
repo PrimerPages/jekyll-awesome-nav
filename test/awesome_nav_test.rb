@@ -11,6 +11,7 @@ class AwesomeNavTest < Minitest::Test
     def debug(*); end
     def info(*); end
     def method_missing(*); end
+
     def respond_to_missing?(*)
       true
     end
@@ -28,9 +29,9 @@ class AwesomeNavTest < Minitest::Test
     assert install_page.data.key?("awesome_nav_next")
 
     nav = install_page.data["awesome_nav"]
-    assert_equal ["Guides Hub", "Getting Started"], nav.map { |item| item["title"] }
+    assert_equal(["Guides Hub", "Getting Started"], nav.map { |item| item["title"] })
     assert_equal "/docs/guides/", nav.first["url"]
-    assert_equal ["Install Guide", "Configuration"], nav.first["children"].map { |item| item["title"] }
+    assert_equal(["Install Guide", "Configuration"], nav.first["children"].map { |item| item["title"] })
     assert_equal "/docs/guides/config/", nav.first["children"][1]["url"]
     assert_equal({ "title" => "Guides Hub", "url" => "/docs/guides/" }, install_page.data["awesome_nav_previous"])
     assert_equal({ "title" => "Configuration", "url" => "/docs/guides/config/" }, install_page.data["awesome_nav_next"])
@@ -41,8 +42,8 @@ class AwesomeNavTest < Minitest::Test
     install_page = find_page(site, "docs/guides/install.md")
 
     assert_equal "docs/guides", install_page.data["awesome_nav_dir"]
-    assert_equal ["Install Guide", "Configuration"], install_page.data["awesome_nav_local"].map { |item| item["title"] }
-    assert_equal ["Documentation", "Guides Hub", "Install Guide"], install_page.data["breadcrumbs"].map { |item| item["title"] }
+    assert_equal(["Install Guide", "Configuration"], install_page.data["awesome_nav_local"].map { |item| item["title"] })
+    assert_equal(["Documentation", "Guides Hub", "Install Guide"], install_page.data["breadcrumbs"].map { |item| item["title"] })
   end
 
   def test_descendants_inherit_override_source_directory
@@ -83,8 +84,8 @@ class AwesomeNavTest < Minitest::Test
     site.process
 
     install_page = find_page(site, "docs/guides/install.md")
-    assert_equal ["Documentation", "Guides", "Install"], install_page.data["breadcrumbs"].map { |item| item["title"] }
-    assert logger.warnings.any? { |topic, message| topic == "AwesomeNav:" && message.include?("Could not load") }
+    assert_equal(%w[Documentation Guides Install], install_page.data["breadcrumbs"].map { |item| item["title"] })
+    assert(logger.warnings.any? { |topic, message| topic == "AwesomeNav:" && message.include?("Could not load") })
   ensure
     Jekyll.instance_variable_set(:@logger, original_logger)
   end

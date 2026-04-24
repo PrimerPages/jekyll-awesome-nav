@@ -7,6 +7,10 @@
 /spec/reports/
 /tmp/
 /.jekyll-cache/
+/.sass-cache/
 Gemfile.lock
 /.ruby-lsp/
-/_site/
+_site/
+.jekyll-cache/
+.sass-cache/
+/vendor/

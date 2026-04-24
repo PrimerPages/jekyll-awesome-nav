@@ -1,0 +1,41 @@
+name: Draft release
+
+on:
+  push:
+    branches:
+      - main  # Updates the PR only if it already exists
+  workflow_dispatch:  # Manually trigger to create a new PR
+
+jobs:
+  draft-release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: read
+    outputs:
+      tag_name: ${{ steps.release_draft.outputs.tag_name }}
+      version: ${{ steps.release_draft.outputs.resolved_version }}
+      changelog: ${{ steps.release_draft.outputs.body }}
+    steps:
+      - name: Checkout main branch
+        uses: actions/checkout@v6
+
+      - name: Resolve version metadata
+        id: version
+        uses: athackst/ci/actions/version-resolver@main
+        with:
+          gh-token: ${{ github.token }}
+
+      - name: Build changelog
+        id: changelog
+        uses: athackst/ci/actions/changelog@main
+        with:
+          pr-info-path: ${{ steps.version.outputs.pr-info-path }}
+
+      - name: Create draft release
+        id: release_draft
+        uses: athackst/ci/actions/release-draft@main
+        with:
+          token: ${{ github.token }}
+          resolved-version: ${{ steps.version.outputs.resolved-version }}
+          changelog: ${{ steps.changelog.outputs.changelog }}

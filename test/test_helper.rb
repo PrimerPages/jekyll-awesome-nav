@@ -52,6 +52,8 @@ module AwesomeNavTestHelpers
   end
 end
 
-class Minitest::Test
-  include AwesomeNavTestHelpers
+module Minitest
+  class Test
+    include AwesomeNavTestHelpers
+  end
 end

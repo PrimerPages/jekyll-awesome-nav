@@ -1,0 +1,43 @@
+AllCops:
+  NewCops: enable
+  SuggestExtensions: false
+
+# Naming cops
+# ----------------------------------------
+Naming/FileName:
+  Exclude:
+    - lib/jekyll-awesome-nav.rb
+
+# Layout cops
+# ----------------------------------------
+Layout/LineLength:
+  Max: 150
+  AllowedPatterns:
+    - '\A# '
+
+# Metrics cops
+# ----------------------------------------
+Metrics/AbcSize:
+  Max: 62
+Metrics/BlockLength:
+  Exclude:
+    - "test/**/*"
+Metrics/ClassLength:
+  Max: 240
+Metrics/CyclomaticComplexity:
+  Max: 12
+Metrics/MethodLength:
+  Max: 27
+Metrics/ModuleLength:
+  Max: 240
+Metrics/ParameterLists:
+  Max: 5
+Metrics/PerceivedComplexity:
+  Max: 13
+
+# Style cops
+# ----------------------------------------
+Style/Documentation:
+  Enabled: false
+Style/StringLiterals:
+  EnforcedStyle: double_quotes
