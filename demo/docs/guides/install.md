@@ -35,7 +35,7 @@ Then configure the docs root:
 awesome_nav:
   enabled: true
   root: docs
-  nav_filename: _nav.yml
+  nav_filename: .nav.yml
 ```
 
 ## Layout default

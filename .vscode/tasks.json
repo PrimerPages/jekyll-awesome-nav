@@ -36,7 +36,7 @@
     {
       "label": "Serve Demo",
       "type": "shell",
-      "command": "bundle exec jekyll serve --source demo --destination /tmp/jekyll-awesome-nav-demo-site --disable-disk-cache --livereload",
+      "command": "bundle exec jekyll serve --source demo --destination /tmp/jekyll-awesome-nav-demo-site --livereload",
       "options": {
         "cwd": "${workspaceFolder}"
       },

@@ -3,11 +3,11 @@
 module Jekyll
   module AwesomeNav
     class NavigationResult
-      def initialize(tree:, root_dir:, root_page:, override_map:)
+      def initialize(tree:, root_dir:, root_page:, nav_map:)
         @tree = tree
         @root_dir = root_dir
         @root_page = root_page
-        @override_map = override_map
+        @nav_map = nav_map
       end
 
       def serialized_tree
@@ -18,8 +18,8 @@ module Jekyll
         @serialized_local_nav_map ||= Serializer.serialize_map(local_nav_nodes)
       end
 
-      def serialized_overrides
-        @serialized_overrides ||= Serializer.serialize_map(@override_map)
+      def serialized_nav_files
+        @serialized_nav_files ||= Serializer.serialize_map(@nav_map)
       end
 
       def local_nav_for(page_dir)
@@ -30,7 +30,7 @@ module Jekyll
         current = page_dir
 
         loop do
-          return current if @override_map.key?(current)
+          return current if @nav_map.key?(current)
           return @root_dir if current == @root_dir
           break if current.empty?
 
@@ -67,8 +67,18 @@ module Jekyll
         @local_nav_nodes ||= begin
           map = { @root_dir => @tree.map(&:deep_dup) }
           walk_local_nav_map(@tree, map)
+          @nav_map.each do |dir, items|
+            map[dir] = local_items_for_override(dir, items)
+          end
           map
         end
+      end
+
+      def local_items_for_override(dir, items)
+        return [] if items.empty?
+        return items.first.children.map(&:deep_dup) if items.length == 1 && items.first.section? && Utils.normalize_dir(items.first.dir) == dir
+
+        items.map(&:deep_dup)
       end
 
       def walk_local_nav_map(items, map)

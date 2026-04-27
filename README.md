@@ -1,13 +1,13 @@
 # Jekyll Awesome Nav
 
-`jekyll-awesome-nav` builds a full navigation tree from a folder hierarchy and lets any directory replace its subtree with a local `_nav.yml` file.
+`jekyll-awesome-nav` builds a full navigation tree from a folder hierarchy and lets any directory replace its subtree with a local `.nav.yml` file.
 
 The plugin is designed around the behavior described in [AGENTS.md](AGENTS.md):
 
 - navigation is generated from `site.pages` under one configured root
 - directories become sections and pages become leaves
 - `index.md` sets a section title and URL
-- `_nav.yml` replaces a directory subtree without merging
+- `.nav.yml` replaces a directory subtree without merging
 - every page under the root gets the same full tree plus local subtree data
 
 ## Installation
@@ -27,7 +27,7 @@ plugins:
 awesome_nav:
   enabled: true
   root: docs
-  nav_filename: _nav.yml
+  nav_filename: .nav.yml
 ```
 
 ## Exposed Page Data
@@ -45,25 +45,22 @@ Titles resolve in this order:
 2. `title`
 3. filename fallback
 
-## `_nav.yml` Format
+## `.nav.yml` Format
 
-Overrides must be arrays of items:
+Overrides use a top-level `nav:` entry:
 
 ```yaml
-- title: Guides
-  url: /docs/guides/
-  children:
-    - title: Install
-      url: /docs/guides/install/
-    - title: Config
-      url: /docs/guides/config/
+nav:
+  - Guides: index.md
+  - Install: install.md
+  - Config: config.md
 ```
 
 Override item rules:
 
-- `title` is required
-- `url` is optional
-- `children` is optional and recursive
+- paths are resolved through `site.pages`
+- relative paths are resolved from the `.nav.yml` directory first, then from `awesome_nav.root`
+- external URLs are preserved
 - override order is preserved exactly as written
 
 ## Demo

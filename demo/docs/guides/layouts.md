@@ -87,7 +87,7 @@ Use `page.awesome_nav_local` when you want a compact menu for the current direct
 
 ## Render previous and next links
 
-The plugin calculates previous and next pages from the final resolved tree, including local `_nav.yml` overrides.
+The plugin calculates previous and next pages from the final resolved tree, including local `.nav.yml` overrides.
 
 ```liquid
 {% raw %}<nav aria-label="Pagination">

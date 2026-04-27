@@ -1,0 +1,7 @@
+nav:
+  - Guides:
+      - Install Guide: install.md
+      - Layout Integration: layouts.md
+      - Configuration: config.md
+      - Navigation Overrides: overrides.md
+      - Generated Data: data.md

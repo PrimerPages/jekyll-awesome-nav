@@ -19,7 +19,7 @@ links:
 
 # Folder-based docs navigation for Jekyll
 
-`jekyll-awesome-nav` builds a full navigation tree from your docs folder and lets any directory replace its own subtree with a local `_nav.yml` file.
+`jekyll-awesome-nav` builds a full navigation tree from your docs folder and lets any directory replace its own subtree with a local `.nav.yml` file.
 
 It is designed for documentation sites that want sensible defaults from folder structure, while still giving authors precise local control when a section needs a custom order or grouping.
 
@@ -30,7 +30,7 @@ It is designed for documentation sites that want sensible defaults from folder s
 - Exposes the full tree on every page as `page.awesome_nav`
 - Exposes the current directory subtree as `page.awesome_nav_local`
 - Computes breadcrumbs from the final resolved tree
-- Replaces a directory subtree entirely when `_nav.yml` is present
+- Replaces a directory subtree entirely when `.nav.yml` is present
 
 ## Quick start
 
@@ -49,17 +49,17 @@ plugins:
 awesome_nav:
   enabled: true
   root: docs
-  nav_filename: _nav.yml
+  nav_filename: .nav.yml
 ```
 
-Then create docs pages under `docs/`. If you want a section to use a custom structure, add a local `_nav.yml` in that folder.
+Then create docs pages under `docs/`. If you want a section to use a custom structure, add a local `.nav.yml` in that folder.
 
 ## This site
 
 This demo site doubles as the plugin info site. The docs section on this site demonstrates:
 
 - automatically generated navigation
-- a local `_nav.yml` override in `docs/guides/`
+- a local `.nav.yml` override in `docs/guides/`
 - breadcrumb generation
 - per-page `awesome_nav` data for theme rendering
  

@@ -2,21 +2,21 @@
 
 module Jekyll
   module AwesomeNav
-    class OverrideResolver
-      def initialize(root_dir:, override_map:)
+    class NavResolver
+      def initialize(root_dir:, nav_map:)
         @root_dir = root_dir
-        @override_map = override_map
+        @nav_map = nav_map
       end
 
       def apply(items, current_dir = @root_dir)
-        source_items = @override_map.fetch(current_dir, items)
+        source_items = @nav_map.fetch(current_dir, items)
 
         Array(source_items).flat_map do |item|
           applied_item = item.deep_dup
           item_dir = child_dir_for_item(current_dir, applied_item)
 
-          if item_dir && item_dir != current_dir && @override_map.key?(item_dir)
-            apply(@override_map[item_dir], item_dir)
+          if item_dir && item_dir != current_dir && @nav_map.key?(item_dir)
+            apply(@nav_map[item_dir], item_dir)
           else
             if applied_item.section? && item_dir && item_dir != current_dir
               applied_item = Node.section(
@@ -36,7 +36,7 @@ module Jekyll
         current = page_dir
 
         loop do
-          return current if @override_map.key?(current)
+          return current if @nav_map.key?(current)
           return @root_dir if current == @root_dir
           break if current.empty?
 

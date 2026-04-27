@@ -31,26 +31,26 @@ class AwesomeNavInternalTest < Minitest::Test
     assert_equal %w[Advanced Configuration Install], tree.first.children.map(&:title)
   end
 
-  def test_override_loader_parses_nodes_and_preserves_external_urls
+  def test_nav_file_loader_parses_nodes_and_preserves_external_urls
     site = make_site("external_override")
     config = Jekyll::AwesomeNav::Config.new(site.config["awesome_nav"])
-    overrides = Jekyll::AwesomeNav::OverrideLoader.new(site: site, config: config).load
+    nav_map = Jekyll::AwesomeNav::NavFileLoader.new(site: site, config: config).load
 
-    assert_equal ["docs/guides"], overrides.keys
-    assert_equal ["Install Guide", "External Docs"], overrides["docs/guides"].map(&:title)
-    assert_equal "https://example.com/docs", overrides["docs/guides"].last.url
-    assert_nil overrides["docs/guides"].last.dir
+    assert_equal ["docs/guides"], nav_map.keys
+    assert_equal ["Install Guide", "External Docs"], nav_map["docs/guides"].map(&:title)
+    assert_equal "https://example.com/docs", nav_map["docs/guides"].last.url
+    assert_nil nav_map["docs/guides"].last.dir
   end
 
-  def test_override_resolver_replaces_nested_subtree
+  def test_nav_resolver_replaces_nested_subtree
     site = process_site
     config = Jekyll::AwesomeNav::Config.new(site.config["awesome_nav"])
     pages = Jekyll::AwesomeNav::PageSet.new(site, config)
     generated = Jekyll::AwesomeNav::TreeBuilder.new(pages: pages, root_dir: config.root_dir).build
-    overrides = Jekyll::AwesomeNav::OverrideLoader.new(site: site, config: config).load
-    resolved = Jekyll::AwesomeNav::OverrideResolver.new(root_dir: config.root_dir, override_map: overrides).apply(generated)
+    nav_map = Jekyll::AwesomeNav::NavFileLoader.new(site: site, config: config).load
+    resolved = Jekyll::AwesomeNav::NavResolver.new(root_dir: config.root_dir, nav_map: nav_map).apply(generated)
 
-    assert_equal ["Guides Hub", "Getting Started"], resolved.map(&:title)
+    assert_equal ["Guides", "Getting Started"], resolved.map(&:title)
     assert_equal ["Install Guide", "Configuration"], resolved.first.children.map(&:title)
   end
 

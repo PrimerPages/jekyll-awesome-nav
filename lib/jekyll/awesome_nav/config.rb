@@ -6,7 +6,7 @@ module Jekyll
       DEFAULTS = {
         "enabled" => true,
         "root" => "docs",
-        "nav_filename" => "_nav.yml"
+        "nav_filename" => ".nav.yml"
       }.freeze
 
       def initialize(raw_config)

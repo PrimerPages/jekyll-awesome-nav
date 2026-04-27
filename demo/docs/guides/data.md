@@ -35,6 +35,6 @@ The plugin also writes resolved data into `site.config` for advanced theme use:
 | --- | --- |
 | `site.awesome_nav_tree` | Full resolved tree. |
 | `site.awesome_nav_local_map` | Local navigation lookup by directory. |
-| `site.awesome_nav_overrides` | Loaded override data. |
+| `site.awesome_nav_files` | Loaded `.nav.yml` data. |
 
 Most layouts should prefer the `page.*` variables because they are already scoped to the current page.

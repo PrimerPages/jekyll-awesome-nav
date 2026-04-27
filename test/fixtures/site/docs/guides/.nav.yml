@@ -1,0 +1,4 @@
+nav:
+  - Guides:
+      - Install Guide: install.md
+      - Configuration: docs/guides/config.md

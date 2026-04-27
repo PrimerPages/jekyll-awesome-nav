@@ -8,7 +8,7 @@ Configure the plugin in `_config.yml`.
 awesome_nav:
   enabled: true
   root: docs
-  nav_filename: _nav.yml
+  nav_filename: .nav.yml
 ```
 
 ## Options
@@ -17,7 +17,7 @@ awesome_nav:
 | --- | --- | --- |
 | `enabled` | `true` | Turns generation on or off. |
 | `root` | `docs` | Folder that contains your documentation pages. |
-| `nav_filename` | `_nav.yml` | Filename used for local subtree overrides. |
+| `nav_filename` | `.nav.yml` | Filename used for local subtree overrides. |
 
 ## Page titles
 
