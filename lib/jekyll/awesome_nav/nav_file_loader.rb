@@ -44,8 +44,9 @@ module Jekyll
           normalize_mapping(item, file, dir, index_label)
         when String
           title = title_for_path(item)
-          url = resolved_url(item, dir)
-          Node.page(dir: dir_for(url), title: title, url: url)
+          source_path = resolved_source_path(item, dir)
+          url = resolved_url_for_source_path(item, source_path)
+          Node.page(dir: dir_for(url), title: title, url: url, path: source_path, filename: File.basename(source_path))
         else
           raise Error, "item #{index_label} in #{file} must be a mapping or path string"
         end
@@ -64,10 +65,19 @@ module Jekyll
             normalize_item(child, file, dir, "#{index_label}.#{child_index + 1}")
           end
           section_url = section_url_for(dir) || children.first&.url
-          Node.new(type: :section, dir: dir_for(section_url), title: title, url: section_url, children: children)
+          section_path = source_path_for_section(dir)
+          Node.section(
+            dir: dir_for(section_url),
+            title: title,
+            url: section_url,
+            children: children,
+            path: section_path,
+            filename: File.basename(section_path)
+          )
         when String
-          url = resolved_url(value, dir)
-          Node.page(dir: dir_for(url), title: title, url: url)
+          source_path = resolved_source_path(value, dir)
+          url = resolved_url_for_source_path(value, source_path)
+          Node.page(dir: dir_for(url), title: title, url: url, path: source_path, filename: File.basename(source_path))
         else
           raise Error, "value for item #{index_label} in #{file} must be a path or array"
         end
@@ -83,12 +93,17 @@ module Jekyll
         end
       end
 
-      def resolved_url(value, dir)
+      def resolved_source_path(value, dir)
         value = value.to_s.strip
         raise Error, "navigation path cannot be empty" if value.empty?
         return value if Utils.external_url?(value)
 
-        source_path = source_path_for(value, dir)
+        source_path_for(value, dir)
+      end
+
+      def resolved_url_for_source_path(value, source_path)
+        return value if Utils.external_url?(value)
+
         @page_urls_by_path.fetch(source_path) { fallback_url_for(source_path) }
       end
 
@@ -110,6 +125,11 @@ module Jekyll
       def section_url_for(dir)
         normalized = Utils.normalize_dir(dir)
         @page_urls_by_path[normalized] || @page_urls_by_path[File.join(normalized, "index.md")]
+      end
+
+      def source_path_for_section(dir)
+        normalized = Utils.normalize_dir(dir)
+        [File.join(normalized, "index.md"), normalized].find { |candidate| @page_urls_by_path.key?(candidate) } || normalized
       end
 
       def without_index(path)

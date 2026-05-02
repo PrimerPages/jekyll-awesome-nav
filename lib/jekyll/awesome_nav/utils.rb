@@ -67,6 +67,12 @@ module Jekyll
       end
 
       def source_dir_for(page)
+        path = source_path_for(page)
+        dir = File.dirname(path.to_s)
+        normalize_dir(dir == "." ? "" : dir)
+      end
+
+      def source_path_for(page)
         path =
           if page.respond_to?(:relative_path) && !page.relative_path.nil?
             page.relative_path
@@ -74,8 +80,7 @@ module Jekyll
             page.path
           end
 
-        dir = File.dirname(path.to_s)
-        normalize_dir(dir == "." ? "" : dir)
+        normalize_dir(path)
       end
 
       def page_title(page, basename)

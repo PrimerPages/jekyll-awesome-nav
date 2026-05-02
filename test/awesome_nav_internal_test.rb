@@ -28,7 +28,11 @@ class AwesomeNavInternalTest < Minitest::Test
     assert_equal ["Guides", "Getting Started"], tree.map(&:title)
     assert tree.first.section?
     assert_equal "/docs/guides/", tree.first.url
+    assert_equal "docs/guides/index.md", tree.first.path
+    assert_equal "index.md", tree.first.filename
     assert_equal %w[Advanced Configuration Install], tree.first.children.map(&:title)
+    assert_equal "docs/guides/advanced/tips.md", tree.first.children.first.children.first.path
+    assert_equal "tips.md", tree.first.children.first.children.first.filename
   end
 
   def test_nav_file_loader_parses_nodes_and_preserves_external_urls
@@ -38,6 +42,8 @@ class AwesomeNavInternalTest < Minitest::Test
 
     assert_equal ["docs/guides"], nav_map.keys
     assert_equal ["Install Guide", "External Docs"], nav_map["docs/guides"].map(&:title)
+    assert_equal "docs/guides/install.md", nav_map["docs/guides"].first.path
+    assert_equal "install.md", nav_map["docs/guides"].first.filename
     assert_equal "https://example.com/docs", nav_map["docs/guides"].last.url
     assert_nil nav_map["docs/guides"].last.dir
   end

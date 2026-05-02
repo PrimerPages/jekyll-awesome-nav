@@ -18,6 +18,7 @@ module Jekyll
       private
 
       def add_page(root, page)
+        page_path = Utils.source_path_for(page)
         dir = Utils.source_dir_for(page)
         relative_dir = Utils.relative_to_root(dir, @root_dir)
         current = root
@@ -40,11 +41,15 @@ module Jekyll
         if basename == "index"
           current.title = title
           current.url = url
+          current.path = page_path
+          current.filename = File.basename(page_path)
         else
           current.children << Node.page(
             dir: [dir, basename].reject(&:empty?).join("/"),
             title: title,
-            url: url
+            url: url,
+            path: page_path,
+            filename: File.basename(page_path)
           )
         end
       end
@@ -61,6 +66,7 @@ module Jekyll
       def sort_key(child)
         [
           child.section? ? 0 : 1,
+          child.path.to_s.downcase,
           child.title.to_s.downcase
         ]
       end
