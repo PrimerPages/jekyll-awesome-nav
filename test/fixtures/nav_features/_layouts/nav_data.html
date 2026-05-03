@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="en">
+  <body>
+    <main>
+    <h2>page.awesome_nav</h2>
+    <div id="awesome-nav">{{ page.awesome_nav | jsonify }}</div>
+    <h2>page.awesome_nav_local</h2>
+    <div id="awesome-nav-local">{{ page.awesome_nav_local | jsonify }}</div>
+    <h2>page.breadcrumbs</h2>
+    <div id="breadcrumbs">{{ page.breadcrumbs | jsonify }}</div>
+    <h2>page.awesome_nav_previous</h2>
+    <div id="previous">{{ page.awesome_nav_previous | jsonify }}</div>
+    <h2>page.awesome_nav_next</h2>
+    <div id="next">{{ page.awesome_nav_next | jsonify }}</div>
+      {{ content }}
+    </main>
+  </body>
+</html>

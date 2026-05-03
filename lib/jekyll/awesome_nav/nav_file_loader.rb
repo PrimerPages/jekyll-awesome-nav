@@ -30,9 +30,11 @@ module Jekyll
         nav = data["nav"]
         raise Error, "expected nav to be an array" unless nav.is_a?(Array)
 
-        nav.map.with_index do |item, index|
+        items = nav.map.with_index do |item, index|
           normalize_item(item, file, dir, (index + 1).to_s)
         end
+        items.instance_variable_set(:@append_unmatched, data["append_unmatched"]) if data.key?("append_unmatched")
+        items
       rescue Psych::Exception, Error => e
         Jekyll.logger.warn("AwesomeNav:", "Could not load #{file}: #{e.message}")
         nil
@@ -43,10 +45,7 @@ module Jekyll
         when Hash
           normalize_mapping(item, file, dir, index_label)
         when String
-          title = title_for_path(item)
-          source_path = resolved_source_path(item, dir)
-          url = resolved_url_for_source_path(item, source_path)
-          Node.page(dir: dir_for(url), title: title, url: url, path: source_path, filename: File.basename(source_path))
+          normalize_string(item, dir)
         else
           raise Error, "item #{index_label} in #{file} must be a mapping or path string"
         end
@@ -56,6 +55,8 @@ module Jekyll
         raise Error, "item #{index_label} in #{file} must have exactly one entry" unless item.length == 1
 
         title, value = item.first
+        return normalize_glob(value, dir, index_label, file) if title.to_s == "glob"
+
         title = title.to_s.strip
         raise Error, "item #{index_label} in #{file} is missing a title" if title.empty?
 
@@ -75,12 +76,25 @@ module Jekyll
             filename: File.basename(section_path)
           )
         when String
-          source_path = resolved_source_path(value, dir)
-          url = resolved_url_for_source_path(value, source_path)
-          Node.page(dir: dir_for(url), title: title, url: url, path: source_path, filename: File.basename(source_path))
+          normalize_string(value, dir, title: title)
         else
           raise Error, "value for item #{index_label} in #{file} must be a path or array"
         end
+      end
+
+      def normalize_string(value, dir, title: nil)
+        value = value.to_s.strip
+        raise Error, "navigation path cannot be empty" if value.empty?
+
+        return Node.page(dir: nil, title: title || value, url: value, path: value, filename: File.basename(value)) if Utils.external_url?(value)
+
+        Node.reference(dir: dir, title: title, target: value)
+      end
+
+      def normalize_glob(value, dir, index_label, file)
+        raise Error, "glob item #{index_label} in #{file} must be a path string" unless value.is_a?(String)
+
+        normalize_string(value, dir)
       end
 
       def build_page_url_index

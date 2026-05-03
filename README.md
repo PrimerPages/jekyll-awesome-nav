@@ -60,8 +60,31 @@ Override item rules:
 
 - paths are resolved through `site.pages`
 - relative paths are resolved from the `.nav.yml` directory first, then from `awesome_nav.root`
+- directory paths insert the generated directory section at that position
+- glob entries expand generated pages or directories using Ruby's stdlib glob matching
 - external URLs are preserved
 - override order is preserved exactly as written
+
+Useful glob examples:
+
+```yaml
+nav:
+  - "*"
+  - "*.md"
+  - "*/"
+  - "**/*.md"
+  - glob: "*"
+```
+
+Use `append_unmatched` to append generated local items that were not matched by the manual nav. Child `.nav.yml`
+files inherit the closest parent setting unless they set their own value:
+
+```yaml
+append_unmatched: true
+nav:
+  - getting-started.md
+  - guides
+```
 
 ## Demo
 

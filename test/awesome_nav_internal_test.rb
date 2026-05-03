@@ -42,8 +42,8 @@ class AwesomeNavInternalTest < Minitest::Test
 
     assert_equal ["docs/guides"], nav_map.keys
     assert_equal ["Install Guide", "External Docs"], nav_map["docs/guides"].map(&:title)
-    assert_equal "docs/guides/install.md", nav_map["docs/guides"].first.path
-    assert_equal "install.md", nav_map["docs/guides"].first.filename
+    assert nav_map["docs/guides"].first.reference?
+    assert_equal "install.md", nav_map["docs/guides"].first.target
     assert_equal "https://example.com/docs", nav_map["docs/guides"].last.url
     assert_nil nav_map["docs/guides"].last.dir
   end
@@ -58,6 +58,32 @@ class AwesomeNavInternalTest < Minitest::Test
 
     assert_equal ["Guides", "Getting Started"], resolved.map(&:title)
     assert_equal ["Install Guide", "Configuration"], resolved.first.children.map(&:title)
+  end
+
+  def test_nav_resolver_expands_directory_only_globs
+    site = process_site
+    config = Jekyll::AwesomeNav::Config.new(site.config["awesome_nav"])
+    pages = Jekyll::AwesomeNav::PageSet.new(site, config)
+    generated = Jekyll::AwesomeNav::TreeBuilder.new(pages: pages, root_dir: config.root_dir).build
+    nav_map = Jekyll::AwesomeNav::NavFileLoader.new(site: site, config: config).load
+    nav_map["docs"] = [Jekyll::AwesomeNav::Node.reference(dir: "docs", target: "*/")]
+
+    resolved = Jekyll::AwesomeNav::NavResolver.new(root_dir: config.root_dir, nav_map: nav_map).apply(generated)
+
+    assert_equal ["Guides"], resolved.map(&:title)
+    assert_equal ["Install Guide", "Configuration"], resolved.first.children.map(&:title)
+  end
+
+  def test_nav_resolver_expands_deep_page_globs_as_a_flat_list
+    site = process_site
+    config = Jekyll::AwesomeNav::Config.new(site.config["awesome_nav"])
+    pages = Jekyll::AwesomeNav::PageSet.new(site, config)
+    generated = Jekyll::AwesomeNav::TreeBuilder.new(pages: pages, root_dir: config.root_dir).build
+    nav_map = { "docs" => [Jekyll::AwesomeNav::Node.reference(dir: "docs", target: "**/*.md")] }
+
+    resolved = Jekyll::AwesomeNav::NavResolver.new(root_dir: config.root_dir, nav_map: nav_map).apply(generated)
+
+    assert_equal ["Tips", "Configuration", "Install", "Getting Started"], resolved.map(&:title)
   end
 
   def test_serializer_matches_public_hash_shape

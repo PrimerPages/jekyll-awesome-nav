@@ -67,18 +67,8 @@ module Jekyll
         @local_nav_nodes ||= begin
           map = { @root_dir => @tree.map(&:deep_dup) }
           walk_local_nav_map(@tree, map)
-          @nav_map.each do |dir, items|
-            map[dir] = local_items_for_override(dir, items)
-          end
           map
         end
-      end
-
-      def local_items_for_override(dir, items)
-        return [] if items.empty?
-        return items.first.children.map(&:deep_dup) if items.length == 1 && items.first.section? && Utils.normalize_dir(items.first.dir) == dir
-
-        items.map(&:deep_dup)
       end
 
       def walk_local_nav_map(items, map)

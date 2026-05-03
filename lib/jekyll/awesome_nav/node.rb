@@ -3,7 +3,7 @@
 module Jekyll
   module AwesomeNav
     class Node
-      attr_accessor :title, :url, :path, :filename
+      attr_accessor :title, :url, :path, :filename, :target
       attr_reader :type, :dir, :children
 
       def self.section(dir:, title: nil, url: nil, children: [], path: nil, filename: nil)
@@ -12,6 +12,12 @@ module Jekyll
 
       def self.page(dir:, title:, url:, path: nil, filename: nil)
         new(type: :page, dir: dir, title: title, url: url, children: [], path: path, filename: filename)
+      end
+
+      def self.reference(dir:, target:, title: nil)
+        node = new(type: :reference, dir: dir, title: title, url: nil, children: [])
+        node.target = target
+        node
       end
 
       def initialize(type:, dir:, title:, url:, children:, path: nil, filename: nil)
@@ -32,8 +38,22 @@ module Jekyll
         type == :page
       end
 
+      def reference?
+        type == :reference
+      end
+
       def with_children(children)
-        self.class.new(type: type, dir: dir, title: title, url: url, children: children, path: path, filename: filename)
+        node = self.class.new(
+          type: type,
+          dir: dir,
+          title: title,
+          url: url,
+          children: children,
+          path: path,
+          filename: filename
+        )
+        node.target = target
+        node
       end
 
       def deep_dup

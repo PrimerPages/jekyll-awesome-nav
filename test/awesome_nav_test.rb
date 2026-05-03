@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require "json"
 require_relative "test_helper"
 
 class AwesomeNavTest < Minitest::Test
@@ -105,5 +106,87 @@ class AwesomeNavTest < Minitest::Test
     install_page = find_page(site, "docs/guides/install.md")
 
     refute install_page.data.key?("awesome_nav")
+  end
+
+  def test_directory_insertion_globs_and_append_unmatched
+    site = process_site("nav_features")
+    page = find_page(site, "docs/getting-started.md")
+    nav = page.data["awesome_nav"]
+    titles = nav.map { |item| item["title"] }
+    guide_titles = nav[1]["children"].map { |item| item["title"] }
+    api_titles = nav[3]["children"].map { |item| item["title"] }
+
+    assert_equal ["Getting Started", "User Guides", "Reference", "API"], titles
+    assert_equal "/docs/guides/", nav[1]["url"]
+    assert_equal ["Install"], guide_titles
+    assert_equal %w[Auth Users], api_titles
+  end
+
+  def test_append_unmatched_appends_generated_entries_after_manual_nav
+    site = process_site("nav_features")
+    page = find_page(site, "docs/getting-started.md")
+    nav = page.data["awesome_nav"]
+    appended_titles = nav.last["children"].map { |item| item["title"] }
+
+    assert_equal "API", nav.last["title"]
+    assert_equal "/docs/api/", nav.last["url"]
+    assert_equal %w[Auth Users], appended_titles
+  end
+
+  def test_append_unmatched_false_hides_omitted_generated_entries
+    site = process_site("nav_features")
+    page = find_page(site, "docs/guides/install.md")
+    local_titles = page.data["awesome_nav_local"].map { |item| item["title"] }
+
+    assert_equal ["Install"], local_titles
+    refute_includes local_titles, "Configuration"
+    refute_includes local_titles, "Advanced"
+  end
+
+  def test_nav_feature_layout_renders_tree_breadcrumbs_and_neighbors
+    site = process_site("nav_features")
+    page = read_output(site, "docs/guides/install/index.html")
+
+    nav = json_script(page, "awesome-nav")
+    local_nav = json_script(page, "awesome-nav-local")
+    breadcrumbs = json_script(page, "breadcrumbs")
+    previous_item = json_script(page, "previous")
+    next_item = json_script(page, "next")
+    nav_titles = nav.map { |item| item["title"] }
+    local_titles = local_nav.map { |item| item["title"] }
+    breadcrumb_titles = breadcrumbs.map { |item| item["title"] }
+
+    assert_equal ["Getting Started", "User Guides", "Reference", "API"], nav_titles
+    assert_equal ["Install"], local_titles
+    assert_equal ["Documentation", "User Guides", "Install"], breadcrumb_titles
+    assert_equal({ "title" => "User Guides", "url" => "/docs/guides/" }, previous_item)
+    assert_equal({ "title" => "Reference", "url" => "/docs/reference/" }, next_item)
+  end
+
+  def test_nav_feature_layout_renders_root_page_neighbors
+    site = process_site("nav_features")
+    page = read_output(site, "docs/getting-started/index.html")
+
+    breadcrumbs = json_script(page, "breadcrumbs")
+    previous_item = json_script(page, "previous")
+    next_item = json_script(page, "next")
+    breadcrumb_titles = breadcrumbs.map { |item| item["title"] }
+
+    assert_equal ["Documentation", "Getting Started"], breadcrumb_titles
+    assert_equal({ "title" => "Documentation", "url" => "/docs/" }, previous_item)
+    assert_equal({ "title" => "User Guides", "url" => "/docs/guides/" }, next_item)
+  end
+
+  private
+
+  def read_output(site, relative_path)
+    File.read(File.join(site.dest, relative_path))
+  end
+
+  def json_script(html, id)
+    match = html.match(%r{<div id="#{Regexp.escape(id)}">(.*?)</div>}m)
+    refute_nil match, "Expected rendered JSON fixture ##{id}"
+
+    JSON.parse(match[1])
   end
 end

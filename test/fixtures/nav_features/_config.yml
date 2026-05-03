@@ -1,0 +1,14 @@
+title: Awesome Nav Feature Fixture
+permalink: pretty
+plugins:
+  - jekyll-awesome-nav
+awesome_nav:
+  enabled: true
+  root: docs
+  nav_filename: .nav.yml
+collections: {}
+defaults:
+  - scope:
+      path: "docs"
+    values:
+      layout: nav_data

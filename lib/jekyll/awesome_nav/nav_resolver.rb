@@ -6,30 +6,24 @@ module Jekyll
       def initialize(root_dir:, nav_map:)
         @root_dir = root_dir
         @nav_map = nav_map
+        @generated_by_dir = {}
+        @generated_by_path = {}
       end
 
-      def apply(items, current_dir = @root_dir)
-        source_items = @nav_map.fetch(current_dir, items)
+      def apply(items, current_dir = @root_dir, inherited_append_unmatched: false)
+        index_generated(items)
+        generated_items = generated_children_for(current_dir, items)
+        override_items = @nav_map[current_dir]
+        append_unmatched = append_unmatched_for(override_items, inherited_append_unmatched)
 
-        Array(source_items).flat_map do |item|
-          applied_item = item.deep_dup
-          item_dir = child_dir_for_item(current_dir, applied_item)
+        return resolve_generated_items(generated_items, current_dir, append_unmatched) unless override_items
 
-          if item_dir && item_dir != current_dir && @nav_map.key?(item_dir)
-            apply(@nav_map[item_dir], item_dir)
-          else
-            if applied_item.section? && item_dir && item_dir != current_dir
-              applied_item = Node.section(
-                dir: applied_item.dir || item_dir,
-                title: applied_item.title,
-                url: applied_item.url,
-                children: apply(applied_item.children, item_dir)
-              )
-            end
+        matched = {}
+        resolved = expand_override_items(override_items, current_dir, generated_items, append_unmatched, matched)
+        return resolved.first.children if same_dir_wrapper?(resolved, current_dir)
+        return resolved unless append_unmatched
 
-            [applied_item]
-          end
-        end
+        resolved + unmatched_items(generated_items, matched, append_unmatched)
       end
 
       def resolved_nav_dir(page_dir)
@@ -47,6 +41,201 @@ module Jekyll
       end
 
       private
+
+      def index_generated(items)
+        Array(items).each do |item|
+          @generated_by_dir[Utils.normalize_dir(item.dir)] = item if item.section? && item.dir
+          @generated_by_path[Utils.normalize_dir(item.path)] = item if item.path
+          index_generated(item.children)
+        end
+      end
+
+      def generated_children_for(current_dir, fallback_items)
+        return fallback_items if current_dir == @root_dir
+
+        @generated_by_dir.fetch(current_dir, Node.section(dir: current_dir)).children
+      end
+
+      def append_unmatched_for(items, inherited)
+        return inherited unless items
+        return inherited unless items.instance_variable_defined?(:@append_unmatched)
+
+        !!items.instance_variable_get(:@append_unmatched)
+      end
+
+      def same_dir_wrapper?(items, current_dir)
+        items.length == 1 && items.first.section? && Utils.normalize_dir(items.first.dir) == current_dir
+      end
+
+      def raw_same_dir_wrapper?(current_dir)
+        same_dir_wrapper?(Array(@nav_map[current_dir]), current_dir)
+      end
+
+      def expand_override_items(items, current_dir, generated_items, append_unmatched, matched)
+        Array(items).flat_map do |item|
+          expand_item(item, current_dir, generated_items, append_unmatched, matched)
+        end
+      end
+
+      def expand_item(item, current_dir, generated_items, append_unmatched, matched)
+        return expand_reference(item, current_dir, generated_items, append_unmatched, matched) if item.reference?
+
+        applied_item = item.deep_dup
+        item_dir = child_dir_for_item(current_dir, applied_item)
+        mark_matched(applied_item, matched)
+
+        if applied_item.section? && item_dir == current_dir
+          return [resolve_local_section(applied_item, current_dir, generated_items, append_unmatched, matched)]
+        end
+
+        applied_item = with_resolved_children(applied_item, item_dir, append_unmatched) if item_dir && item_dir != current_dir
+
+        [applied_item]
+      end
+
+      def resolve_local_section(item, current_dir, generated_items, append_unmatched, matched)
+        child_matched = {}
+        children = expand_override_items(item.children, current_dir, generated_items, append_unmatched, child_matched)
+        children += unmatched_items(generated_items, child_matched, append_unmatched) if append_unmatched
+        child_matched.each_key { |key| matched[key] = true }
+
+        Node.section(
+          dir: item.dir,
+          title: item.title,
+          url: item.url,
+          children: children,
+          path: item.path,
+          filename: item.filename
+        )
+      end
+
+      def expand_reference(item, current_dir, generated_items, append_unmatched, matched)
+        return expand_glob(item, current_dir, generated_items, append_unmatched, matched) if glob?(item.target)
+
+        generated = generated_node_for_reference(item, current_dir)
+        return [] unless generated
+
+        node = generated.deep_dup
+        node.title = item.title if item.title
+        mark_matched(node, matched)
+        [with_resolved_children(node, Utils.normalize_dir(node.dir), append_unmatched)]
+      end
+
+      def expand_glob(item, current_dir, generated_items, append_unmatched, matched)
+        glob_matches(item.target, current_dir, generated_items).filter_map do |generated|
+          next if matched?(generated, matched)
+
+          node = generated.deep_dup
+          mark_matched(node, matched)
+          with_resolved_children(node, Utils.normalize_dir(node.dir), append_unmatched)
+        end
+      end
+
+      def with_resolved_children(item, item_dir, append_unmatched)
+        return item unless item.section?
+
+        children = apply(item.children, item_dir, inherited_append_unmatched: append_unmatched)
+        Node.section(
+          dir: item.dir,
+          title: item.title,
+          url: item.url,
+          children: children,
+          path: item.path,
+          filename: item.filename
+        )
+      end
+
+      def resolve_generated_items(items, current_dir, append_unmatched)
+        Array(items).flat_map do |item|
+          applied_item = item.deep_dup
+          item_dir = child_dir_for_item(current_dir, applied_item)
+
+          next resolve_generated_child(applied_item, item_dir, append_unmatched) if item_dir && item_dir != current_dir
+
+          applied_item
+        end
+      end
+
+      def resolve_generated_child(item, item_dir, append_unmatched)
+        return with_resolved_children(item, item_dir, append_unmatched) unless @nav_map.key?(item_dir)
+        return with_resolved_children(item, item_dir, append_unmatched) if raw_same_dir_wrapper?(item_dir)
+
+        apply(item.children, item_dir, inherited_append_unmatched: append_unmatched)
+      end
+
+      def unmatched_items(generated_items, matched, append_unmatched)
+        Array(generated_items).filter_map do |item|
+          next if matched?(item, matched)
+
+          node = item.deep_dup
+          with_resolved_children(node, Utils.normalize_dir(node.dir), append_unmatched)
+        end
+      end
+
+      def generated_node_for_reference(item, current_dir)
+        candidates_for(item.target, current_dir).each do |candidate|
+          page = @generated_by_path[candidate]
+          return page if page
+
+          section = @generated_by_dir[candidate]
+          return section if section
+        end
+
+        nil
+      end
+
+      def candidates_for(value, current_dir)
+        clean_value = Utils.normalize_dir(value)
+        candidates = []
+        candidates << Utils.normalize_dir(File.join(current_dir, clean_value)) unless current_dir.empty?
+        candidates << Utils.normalize_dir(File.join(@root_dir, clean_value))
+        candidates << clean_value
+        candidates
+      end
+
+      def glob_matches(pattern, current_dir, generated_items)
+        recursive = pattern.to_s.include?("**")
+        directory_only = pattern.to_s.end_with?("/")
+        normalized_pattern = pattern.to_s.delete_suffix("/")
+
+        pool = recursive ? flatten_generated(generated_items) : Array(generated_items)
+        pool.select do |item|
+          next false if directory_only && !item.section?
+
+          File.fnmatch?(normalized_pattern, relative_match_path(item, current_dir), File::FNM_PATHNAME)
+        end
+      end
+
+      def flatten_generated(items)
+        Array(items).each_with_object([]) do |item, flattened|
+          flattened << item
+          flattened.concat(flatten_generated(item.children)) if item.section?
+        end
+      end
+
+      def relative_match_path(item, current_dir)
+        source = item.section? ? Utils.normalize_dir(item.dir) : Utils.normalize_dir(item.path)
+        Utils.relative_to_root(source, current_dir)
+      end
+
+      def glob?(value)
+        value.to_s.match?(/[*?\[]/)
+      end
+
+      def mark_matched(item, matched)
+        return if item.reference?
+
+        matched[node_key(item)] = true
+        item.children.each { |child| mark_matched(child, matched) } if item.section?
+      end
+
+      def matched?(item, matched)
+        matched[node_key(item)]
+      end
+
+      def node_key(item)
+        item.section? ? "dir:#{Utils.normalize_dir(item.dir)}" : "path:#{Utils.normalize_dir(item.path || item.url)}"
+      end
 
       def child_dir_for_item(parent_dir, item)
         return Utils.normalize_dir(item.dir) if item.dir
