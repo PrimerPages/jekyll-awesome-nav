@@ -101,6 +101,18 @@ nav:
   - "*.md"
 ```
 
+Use `ignore` to exclude generated items from glob entries and `append_unmatched`. Manual entries are still honored
+when you list them explicitly:
+
+```yaml
+ignore:
+  - "*.hidden.md"
+  - drafts/
+nav:
+  - visible.md
+  - "*.md"
+```
+
 ## Demo
 
 A small example site lives in [`demo/`](demo). From the gem root, run:

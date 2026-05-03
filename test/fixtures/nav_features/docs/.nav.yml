@@ -1,4 +1,7 @@
 append_unmatched: true
+ignore:
+  - "*.hidden.md"
+  - "drafts/"
 sort:
   direction: desc
   type: natural
@@ -7,5 +10,6 @@ sort:
   ignore_case: true
 nav:
   - getting-started.md
+  - explicit.hidden.md
   - User Guides: guides
   - "*.md"

@@ -113,11 +113,11 @@ class AwesomeNavTest < Minitest::Test
     page = find_page(site, "docs/getting-started.md")
     nav = page.data["awesome_nav"]
     titles = nav.map { |item| item["title"] }
-    guide_titles = nav[1]["children"].map { |item| item["title"] }
-    api_titles = nav[6]["children"].map { |item| item["title"] }
+    guide_titles = nav[2]["children"].map { |item| item["title"] }
+    api_titles = nav[7]["children"].map { |item| item["title"] }
 
-    assert_equal ["Getting Started", "User Guides", "Reference", "Page Ten", "Page Two", "Changelog", "API"], titles
-    assert_equal "/docs/guides/", nav[1]["url"]
+    assert_equal ["Getting Started", "Explicit Hidden", "User Guides", "Reference", "Page Ten", "Page Two", "Changelog", "API"], titles
+    assert_equal "/docs/guides/", nav[2]["url"]
     assert_equal ["Install"], guide_titles
     assert_equal %w[Auth Users], api_titles
   end
@@ -127,9 +127,19 @@ class AwesomeNavTest < Minitest::Test
     page = find_page(site, "docs/getting-started.md")
     titles = page.data["awesome_nav"].map { |item| item["title"] }
 
-    assert_equal ["Getting Started", "User Guides"], titles.first(2)
-    assert_equal ["Reference", "Page Ten", "Page Two", "Changelog"], titles[2, 4]
+    assert_equal ["Getting Started", "Explicit Hidden", "User Guides"], titles.first(3)
+    assert_equal ["Reference", "Page Ten", "Page Two", "Changelog"], titles[3, 4]
     assert_equal "API", titles.last
+  end
+
+  def test_ignore_filters_generated_batches_but_not_manual_entries
+    site = process_site("nav_features")
+    page = find_page(site, "docs/getting-started.md")
+    titles = page.data["awesome_nav"].map { |item| item["title"] }
+
+    assert_includes titles, "Explicit Hidden"
+    refute_includes titles, "Secret Hidden"
+    refute_includes titles, "Drafts"
   end
 
   def test_append_unmatched_appends_generated_entries_after_manual_nav
@@ -166,7 +176,7 @@ class AwesomeNavTest < Minitest::Test
     local_titles = local_nav.map { |item| item["title"] }
     breadcrumb_titles = breadcrumbs.map { |item| item["title"] }
 
-    assert_equal ["Getting Started", "User Guides", "Reference", "Page Ten", "Page Two", "Changelog", "API"], nav_titles
+    assert_equal ["Getting Started", "Explicit Hidden", "User Guides", "Reference", "Page Ten", "Page Two", "Changelog", "API"], nav_titles
     assert_equal ["Install"], local_titles
     assert_equal ["Documentation", "User Guides", "Install"], breadcrumb_titles
     assert_equal({ "title" => "User Guides", "url" => "/docs/guides/" }, previous_item)
@@ -184,7 +194,7 @@ class AwesomeNavTest < Minitest::Test
 
     assert_equal ["Documentation", "Getting Started"], breadcrumb_titles
     assert_equal({ "title" => "Documentation", "url" => "/docs/" }, previous_item)
-    assert_equal({ "title" => "User Guides", "url" => "/docs/guides/" }, next_item)
+    assert_equal({ "title" => "Explicit Hidden", "url" => "/docs/explicit.hidden/" }, next_item)
   end
 
   private

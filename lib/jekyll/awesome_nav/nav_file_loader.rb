@@ -35,6 +35,7 @@ module Jekyll
         end
         items.instance_variable_set(:@append_unmatched, data["append_unmatched"]) if data.key?("append_unmatched")
         items.instance_variable_set(:@sort_options, SortOptions.from(data["sort"])) if data.key?("sort")
+        items.instance_variable_set(:@ignore_patterns, normalize_ignore_patterns(data["ignore"])) if data.key?("ignore")
         items
       rescue Psych::Exception, Error => e
         Jekyll.logger.warn("AwesomeNav:", "Could not load #{file}: #{e.message}")
@@ -96,6 +97,24 @@ module Jekyll
         raise Error, "glob item #{index_label} in #{file} must be a path string" unless value.is_a?(String)
 
         normalize_string(value, dir)
+      end
+
+      def normalize_ignore_patterns(value)
+        patterns =
+          case value
+          when String
+            [value]
+          when Array
+            value
+          else
+            raise Error, "ignore must be a path string or array of path strings"
+          end
+
+        patterns.map do |pattern|
+          raise Error, "ignore patterns must be path strings" unless pattern.is_a?(String)
+
+          pattern
+        end
       end
 
       def build_page_url_index
