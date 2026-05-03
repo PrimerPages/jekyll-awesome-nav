@@ -114,12 +114,22 @@ class AwesomeNavTest < Minitest::Test
     nav = page.data["awesome_nav"]
     titles = nav.map { |item| item["title"] }
     guide_titles = nav[1]["children"].map { |item| item["title"] }
-    api_titles = nav[3]["children"].map { |item| item["title"] }
+    api_titles = nav[6]["children"].map { |item| item["title"] }
 
-    assert_equal ["Getting Started", "User Guides", "Reference", "API"], titles
+    assert_equal ["Getting Started", "User Guides", "Reference", "Page Ten", "Page Two", "Changelog", "API"], titles
     assert_equal "/docs/guides/", nav[1]["url"]
     assert_equal ["Install"], guide_titles
     assert_equal %w[Auth Users], api_titles
+  end
+
+  def test_sort_options_apply_to_generated_batches_without_reordering_manual_entries
+    site = process_site("nav_features")
+    page = find_page(site, "docs/getting-started.md")
+    titles = page.data["awesome_nav"].map { |item| item["title"] }
+
+    assert_equal ["Getting Started", "User Guides"], titles.first(2)
+    assert_equal ["Reference", "Page Ten", "Page Two", "Changelog"], titles[2, 4]
+    assert_equal "API", titles.last
   end
 
   def test_append_unmatched_appends_generated_entries_after_manual_nav
@@ -156,7 +166,7 @@ class AwesomeNavTest < Minitest::Test
     local_titles = local_nav.map { |item| item["title"] }
     breadcrumb_titles = breadcrumbs.map { |item| item["title"] }
 
-    assert_equal ["Getting Started", "User Guides", "Reference", "API"], nav_titles
+    assert_equal ["Getting Started", "User Guides", "Reference", "Page Ten", "Page Two", "Changelog", "API"], nav_titles
     assert_equal ["Install"], local_titles
     assert_equal ["Documentation", "User Guides", "Install"], breadcrumb_titles
     assert_equal({ "title" => "User Guides", "url" => "/docs/guides/" }, previous_item)

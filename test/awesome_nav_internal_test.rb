@@ -83,7 +83,7 @@ class AwesomeNavInternalTest < Minitest::Test
 
     resolved = Jekyll::AwesomeNav::NavResolver.new(root_dir: config.root_dir, nav_map: nav_map).apply(generated)
 
-    assert_equal ["Tips", "Configuration", "Install", "Getting Started"], resolved.map(&:title)
+    assert_equal ["Getting Started", "Tips", "Configuration", "Install"], resolved.map(&:title)
   end
 
   def test_serializer_matches_public_hash_shape

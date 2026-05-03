@@ -1,4 +1,10 @@
 append_unmatched: true
+sort:
+  direction: desc
+  type: natural
+  by: filename
+  sections: last
+  ignore_case: true
 nav:
   - getting-started.md
   - User Guides: guides

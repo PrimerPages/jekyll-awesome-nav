@@ -86,6 +86,21 @@ nav:
   - guides
 ```
 
+Use `sort` to order generated batches from glob entries and `append_unmatched`. Manual entries stay in the order
+you write them:
+
+```yaml
+sort:
+  direction: asc
+  type: natural
+  by: filename
+  sections: last
+  ignore_case: true
+nav:
+  - intro.md
+  - "*.md"
+```
+
 ## Demo
 
 A small example site lives in [`demo/`](demo). From the gem root, run:

@@ -34,6 +34,7 @@ module Jekyll
           normalize_item(item, file, dir, (index + 1).to_s)
         end
         items.instance_variable_set(:@append_unmatched, data["append_unmatched"]) if data.key?("append_unmatched")
+        items.instance_variable_set(:@sort_options, SortOptions.from(data["sort"])) if data.key?("sort")
         items
       rescue Psych::Exception, Error => e
         Jekyll.logger.warn("AwesomeNav:", "Could not load #{file}: #{e.message}")

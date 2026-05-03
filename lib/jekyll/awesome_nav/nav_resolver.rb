@@ -10,20 +10,21 @@ module Jekyll
         @generated_by_path = {}
       end
 
-      def apply(items, current_dir = @root_dir, inherited_append_unmatched: false)
+      def apply(items, current_dir = @root_dir, inherited_append_unmatched: false, inherited_sort_options: SortOptions.from(nil))
         index_generated(items)
         generated_items = generated_children_for(current_dir, items)
         override_items = @nav_map[current_dir]
         append_unmatched = append_unmatched_for(override_items, inherited_append_unmatched)
+        sort_options = sort_options_for(override_items, inherited_sort_options)
 
-        return resolve_generated_items(generated_items, current_dir, append_unmatched) unless override_items
+        return resolve_generated_items(generated_items, current_dir, append_unmatched, sort_options) unless override_items
 
         matched = {}
-        resolved = expand_override_items(override_items, current_dir, generated_items, append_unmatched, matched)
+        resolved = expand_override_items(override_items, current_dir, generated_items, append_unmatched, sort_options, matched)
         return resolved.first.children if same_dir_wrapper?(resolved, current_dir)
         return resolved unless append_unmatched
 
-        resolved + unmatched_items(generated_items, matched, append_unmatched)
+        resolved + unmatched_items(generated_items, matched, append_unmatched, sort_options)
       end
 
       def resolved_nav_dir(page_dir)
@@ -63,6 +64,13 @@ module Jekyll
         !!items.instance_variable_get(:@append_unmatched)
       end
 
+      def sort_options_for(items, inherited)
+        return inherited unless items
+        return inherited unless items.instance_variable_defined?(:@sort_options)
+
+        items.instance_variable_get(:@sort_options)
+      end
+
       def same_dir_wrapper?(items, current_dir)
         items.length == 1 && items.first.section? && Utils.normalize_dir(items.first.dir) == current_dir
       end
@@ -71,32 +79,32 @@ module Jekyll
         same_dir_wrapper?(Array(@nav_map[current_dir]), current_dir)
       end
 
-      def expand_override_items(items, current_dir, generated_items, append_unmatched, matched)
+      def expand_override_items(items, current_dir, generated_items, append_unmatched, sort_options, matched)
         Array(items).flat_map do |item|
-          expand_item(item, current_dir, generated_items, append_unmatched, matched)
+          expand_item(item, current_dir, generated_items, append_unmatched, sort_options, matched)
         end
       end
 
-      def expand_item(item, current_dir, generated_items, append_unmatched, matched)
-        return expand_reference(item, current_dir, generated_items, append_unmatched, matched) if item.reference?
+      def expand_item(item, current_dir, generated_items, append_unmatched, sort_options, matched)
+        return expand_reference(item, current_dir, generated_items, append_unmatched, sort_options, matched) if item.reference?
 
         applied_item = item.deep_dup
         item_dir = child_dir_for_item(current_dir, applied_item)
         mark_matched(applied_item, matched)
 
         if applied_item.section? && item_dir == current_dir
-          return [resolve_local_section(applied_item, current_dir, generated_items, append_unmatched, matched)]
+          return [resolve_local_section(applied_item, current_dir, generated_items, append_unmatched, sort_options, matched)]
         end
 
-        applied_item = with_resolved_children(applied_item, item_dir, append_unmatched) if item_dir && item_dir != current_dir
+        applied_item = with_resolved_children(applied_item, item_dir, append_unmatched, sort_options) if item_dir && item_dir != current_dir
 
         [applied_item]
       end
 
-      def resolve_local_section(item, current_dir, generated_items, append_unmatched, matched)
+      def resolve_local_section(item, current_dir, generated_items, append_unmatched, sort_options, matched)
         child_matched = {}
-        children = expand_override_items(item.children, current_dir, generated_items, append_unmatched, child_matched)
-        children += unmatched_items(generated_items, child_matched, append_unmatched) if append_unmatched
+        children = expand_override_items(item.children, current_dir, generated_items, append_unmatched, sort_options, child_matched)
+        children += unmatched_items(generated_items, child_matched, append_unmatched, sort_options) if append_unmatched
         child_matched.each_key { |key| matched[key] = true }
 
         Node.section(
@@ -109,8 +117,8 @@ module Jekyll
         )
       end
 
-      def expand_reference(item, current_dir, generated_items, append_unmatched, matched)
-        return expand_glob(item, current_dir, generated_items, append_unmatched, matched) if glob?(item.target)
+      def expand_reference(item, current_dir, generated_items, append_unmatched, sort_options, matched)
+        return expand_glob(item, current_dir, generated_items, append_unmatched, sort_options, matched) if glob?(item.target)
 
         generated = generated_node_for_reference(item, current_dir)
         return [] unless generated
@@ -118,23 +126,28 @@ module Jekyll
         node = generated.deep_dup
         node.title = item.title if item.title
         mark_matched(node, matched)
-        [with_resolved_children(node, Utils.normalize_dir(node.dir), append_unmatched)]
+        [with_resolved_children(node, Utils.normalize_dir(node.dir), append_unmatched, sort_options)]
       end
 
-      def expand_glob(item, current_dir, generated_items, append_unmatched, matched)
-        glob_matches(item.target, current_dir, generated_items).filter_map do |generated|
+      def expand_glob(item, current_dir, generated_items, append_unmatched, sort_options, matched)
+        glob_matches(item.target, current_dir, generated_items, sort_options).filter_map do |generated|
           next if matched?(generated, matched)
 
           node = generated.deep_dup
           mark_matched(node, matched)
-          with_resolved_children(node, Utils.normalize_dir(node.dir), append_unmatched)
+          with_resolved_children(node, Utils.normalize_dir(node.dir), append_unmatched, sort_options)
         end
       end
 
-      def with_resolved_children(item, item_dir, append_unmatched)
+      def with_resolved_children(item, item_dir, append_unmatched, sort_options)
         return item unless item.section?
 
-        children = apply(item.children, item_dir, inherited_append_unmatched: append_unmatched)
+        children = apply(
+          item.children,
+          item_dir,
+          inherited_append_unmatched: append_unmatched,
+          inherited_sort_options: sort_options
+        )
         Node.section(
           dir: item.dir,
           title: item.title,
@@ -145,30 +158,35 @@ module Jekyll
         )
       end
 
-      def resolve_generated_items(items, current_dir, append_unmatched)
+      def resolve_generated_items(items, current_dir, append_unmatched, sort_options)
         Array(items).flat_map do |item|
           applied_item = item.deep_dup
           item_dir = child_dir_for_item(current_dir, applied_item)
 
-          next resolve_generated_child(applied_item, item_dir, append_unmatched) if item_dir && item_dir != current_dir
+          next resolve_generated_child(applied_item, item_dir, append_unmatched, sort_options) if item_dir && item_dir != current_dir
 
           applied_item
         end
       end
 
-      def resolve_generated_child(item, item_dir, append_unmatched)
-        return with_resolved_children(item, item_dir, append_unmatched) unless @nav_map.key?(item_dir)
-        return with_resolved_children(item, item_dir, append_unmatched) if raw_same_dir_wrapper?(item_dir)
+      def resolve_generated_child(item, item_dir, append_unmatched, sort_options)
+        return with_resolved_children(item, item_dir, append_unmatched, sort_options) unless @nav_map.key?(item_dir)
+        return with_resolved_children(item, item_dir, append_unmatched, sort_options) if raw_same_dir_wrapper?(item_dir)
 
-        apply(item.children, item_dir, inherited_append_unmatched: append_unmatched)
+        apply(
+          item.children,
+          item_dir,
+          inherited_append_unmatched: append_unmatched,
+          inherited_sort_options: sort_options
+        )
       end
 
-      def unmatched_items(generated_items, matched, append_unmatched)
-        Array(generated_items).filter_map do |item|
+      def unmatched_items(generated_items, matched, append_unmatched, sort_options)
+        sort_options.sort(generated_items).filter_map do |item|
           next if matched?(item, matched)
 
           node = item.deep_dup
-          with_resolved_children(node, Utils.normalize_dir(node.dir), append_unmatched)
+          with_resolved_children(node, Utils.normalize_dir(node.dir), append_unmatched, sort_options)
         end
       end
 
@@ -193,17 +211,18 @@ module Jekyll
         candidates
       end
 
-      def glob_matches(pattern, current_dir, generated_items)
+      def glob_matches(pattern, current_dir, generated_items, sort_options)
         recursive = pattern.to_s.include?("**")
         directory_only = pattern.to_s.end_with?("/")
         normalized_pattern = pattern.to_s.delete_suffix("/")
 
         pool = recursive ? flatten_generated(generated_items) : Array(generated_items)
-        pool.select do |item|
+        matches = pool.select do |item|
           next false if directory_only && !item.section?
 
           File.fnmatch?(normalized_pattern, relative_match_path(item, current_dir), File::FNM_PATHNAME)
         end
+        sort_options.sort(matches)
       end
 
       def flatten_generated(items)
