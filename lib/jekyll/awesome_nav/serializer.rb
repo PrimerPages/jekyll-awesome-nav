@@ -4,12 +4,12 @@ module Jekyll
   module AwesomeNav
     class Serializer
       def self.serialize_tree(nodes, include_internal: false)
-        nodes = nodes.items if nodes.respond_to?(:items)
         Array(nodes).map { |node| serialize_node(node, include_internal: include_internal) }
       end
 
       def self.serialize_map(map, include_internal: false)
-        map.each_with_object({}) do |(key, items), serialized|
+        map.each_with_object({}) do |(key, value), serialized|
+          items = value.is_a?(NavFile) ? value.items : value
           serialized[key] = serialize_tree(items, include_internal: include_internal)
         end
       end

@@ -256,7 +256,7 @@ module Jekyll
         item_dir = hidden_dir_for(item)
         nav_file = @nav_map[item_dir]
 
-        nav_file.respond_to?(:options) && nav_file.options.hide?
+        nav_file&.options&.hide?
       end
 
       def hidden_dir_for(item)
