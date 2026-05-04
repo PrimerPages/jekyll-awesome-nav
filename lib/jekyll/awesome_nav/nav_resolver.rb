@@ -22,8 +22,8 @@ module Jekyll
         index_generated(items)
         generated_items = generated_children_for(current_dir, items)
         nav_file = @nav_map[current_dir]
-        options = nav_options(nav_file)
-        override_items = nav_items(nav_file)
+        options = nav_file&.options || NavFileOptions.new
+        override_items = nav_file&.items
         context = ResolutionContext.new(
           append_unmatched: options.append_unmatched_or(inherited_append_unmatched),
           sort_options: options.sort_options_or(inherited_sort_options),
@@ -70,26 +70,12 @@ module Jekyll
         @generated_by_dir.fetch(current_dir, Node.section(dir: current_dir)).children
       end
 
-      def nav_items(nav_file)
-        return nil unless nav_file
-        return nav_file.items if nav_file.respond_to?(:items)
-
-        nav_file
-      end
-
-      def nav_options(nav_file)
-        return NavFileOptions.new unless nav_file
-        return nav_file.options if nav_file.respond_to?(:options)
-
-        NavFileOptions.new
-      end
-
       def same_dir_wrapper?(items, current_dir)
         items.length == 1 && items.first.section? && Utils.normalize_dir(items.first.dir) == current_dir
       end
 
       def raw_same_dir_wrapper?(current_dir)
-        same_dir_wrapper?(Array(nav_items(@nav_map[current_dir])), current_dir)
+        same_dir_wrapper?(Array(@nav_map[current_dir]&.items), current_dir)
       end
 
       def expand_override_items(items, current_dir, generated_items, context, matched)
