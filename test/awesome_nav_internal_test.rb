@@ -116,6 +116,32 @@ class AwesomeNavInternalTest < Minitest::Test
     assert_equal ["Getting Started", "Tips", "Configuration", "Install"], resolved.map(&:title)
   end
 
+  def test_nav_resolver_preserves_single_manual_section_at_current_directory
+    site = process_site
+    config = Jekyll::AwesomeNav::Config.new(site.config["awesome_nav"])
+    pages = Jekyll::AwesomeNav::PageSet.new(site, config)
+    generated = Jekyll::AwesomeNav::TreeBuilder.new(pages: pages, root_dir: config.root_dir).build
+    nav_map = {
+      "docs" => nav_file(
+        [
+          Jekyll::AwesomeNav::Node.section(
+            dir: nil,
+            title: "Main",
+            children: [
+              Jekyll::AwesomeNav::Node.reference(dir: "docs", target: "getting-started.md")
+            ]
+          )
+        ]
+      )
+    }
+
+    resolved = Jekyll::AwesomeNav::NavResolver.new(root_dir: config.root_dir, nav_map: nav_map).apply(generated)
+
+    assert_equal ["Main"], resolved.map(&:title)
+    assert_nil resolved.first.url
+    assert_equal ["Getting Started"], resolved.first.children.map(&:title)
+  end
+
   def test_serializer_matches_public_hash_shape
     nodes = [
       Jekyll::AwesomeNav::Node.section(

@@ -75,7 +75,10 @@ module Jekyll
       end
 
       def raw_same_dir_wrapper?(current_dir)
-        same_dir_wrapper?(Array(@nav_map[current_dir]&.items), current_dir)
+        items = Array(@nav_map[current_dir]&.items)
+
+        same_dir_wrapper?(items, current_dir) ||
+          (items.length == 1 && items.first.section? && same_dir_manual_wrapper?(items.first, current_dir))
       end
 
       def expand_override_items(items, current_dir, generated_items, context, matched)
@@ -112,6 +115,21 @@ module Jekyll
         child_matched = {}
         children = expand_override_items(item.children, current_dir, generated_items, context, child_matched)
         children += unmatched_items(generated_items, child_matched, context, current_dir) if context.append_unmatched
+        child_matched.each_key { |key| matched[key] = true }
+
+        Node.section(
+          dir: item.dir,
+          title: item.title,
+          url: item.url,
+          children: children,
+          path: item.path,
+          filename: item.filename
+        )
+      end
+
+      def resolve_manual_section(item, current_dir, generated_items, context, matched)
+        child_matched = {}
+        children = expand_override_items(item.children, current_dir, generated_items, context, child_matched)
         child_matched.each_key { |key| matched[key] = true }
 
         Node.section(
@@ -225,6 +243,25 @@ module Jekyll
         end
 
         nil
+      end
+
+      def same_dir_manual_wrapper?(item, current_dir)
+        generated = @generated_by_dir[current_dir]
+
+        generated&.section? && item.title == generated.title
+      end
+
+      def same_dir_section(item, current_dir)
+        generated = @generated_by_dir[current_dir]
+
+        Node.section(
+          dir: generated.dir,
+          title: item.title,
+          url: generated.url,
+          children: item.children,
+          path: generated.path,
+          filename: generated.filename
+        )
       end
 
       def candidates_for(value, current_dir)
