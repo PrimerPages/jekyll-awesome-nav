@@ -132,11 +132,24 @@ module Jekyll
 
         generated = generated_node_for_reference(item, current_dir)
         return [] unless generated
+        return [] if hidden?(generated)
+
+        return [section_page_node(generated, item.title)] if generated.section? && Utils.normalize_dir(generated.dir) == current_dir
 
         node = generated.deep_dup
         node.title = item.title if item.title
         mark_matched(node, matched)
         [with_resolved_children(node, Utils.normalize_dir(node.dir), append_unmatched, sort_options, ignore_patterns)]
+      end
+
+      def section_page_node(section, title)
+        Node.page(
+          dir: section.dir,
+          title: title || section.title,
+          url: section.url,
+          path: section.path,
+          filename: section.filename
+        )
       end
 
       def expand_glob(item, current_dir, generated_items, append_unmatched, sort_options, ignore_patterns, matched)
@@ -174,6 +187,7 @@ module Jekyll
           applied_item = item.deep_dup
           item_dir = child_dir_for_item(current_dir, applied_item)
 
+          next if hidden?(applied_item)
           next resolve_generated_child(applied_item, item_dir, append_unmatched, sort_options, ignore_patterns) if item_dir && item_dir != current_dir
 
           applied_item
@@ -196,6 +210,7 @@ module Jekyll
       def unmatched_items(generated_items, matched, append_unmatched, sort_options, ignore_patterns, current_dir)
         sort_options.sort(generated_items).filter_map do |item|
           next if matched?(item, matched)
+          next if hidden?(item)
           next if ignored?(item, current_dir, ignore_patterns)
 
           node = item.deep_dup
@@ -232,11 +247,23 @@ module Jekyll
         pool = recursive ? flatten_generated(generated_items) : Array(generated_items)
         matches = pool.select do |item|
           next false if directory_only && !item.section?
+          next false if hidden?(item)
           next false if ignored?(item, current_dir, ignore_patterns)
 
           File.fnmatch?(normalized_pattern, relative_match_path(item, current_dir), File::FNM_PATHNAME)
         end
         sort_options.sort(matches)
+      end
+
+      def hidden?(item)
+        item_dir = hidden_dir_for(item)
+        nav_file = @nav_map[item_dir]
+
+        nav_file.respond_to?(:options) && nav_file.options.hide?
+      end
+
+      def hidden_dir_for(item)
+        item.section? ? Utils.normalize_dir(item.dir) : Utils.source_dir_for_path(item.path)
       end
 
       def ignored?(item, current_dir, ignore_patterns)

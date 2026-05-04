@@ -10,13 +10,15 @@ module Jekyll
       def self.from(data)
         new(
           append_unmatched: data.key?("append_unmatched") ? data["append_unmatched"] : UNSET,
+          hide: data.key?("hide") ? data["hide"] : UNSET,
           ignore: data.key?("ignore") ? data["ignore"] : UNSET,
           sort: data.key?("sort") ? data["sort"] : UNSET
         )
       end
 
-      def initialize(append_unmatched: UNSET, ignore: UNSET, sort: UNSET)
+      def initialize(append_unmatched: UNSET, hide: UNSET, ignore: UNSET, sort: UNSET)
         @append_unmatched = append_unmatched
+        @hide = hide
         @ignore_patterns = ignore == UNSET ? UNSET : normalize_ignore_patterns(ignore)
         @sort_options = sort == UNSET ? UNSET : SortOptions.from(sort)
       end
@@ -37,6 +39,10 @@ module Jekyll
         return inherited if @sort_options == UNSET
 
         @sort_options
+      end
+
+      def hide?
+        @hide != UNSET && !!@hide
       end
 
       private

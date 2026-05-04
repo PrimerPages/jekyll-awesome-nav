@@ -67,7 +67,10 @@ module Jekyll
       end
 
       def source_dir_for(page)
-        path = source_path_for(page)
+        source_dir_for_path(source_path_for(page))
+      end
+
+      def source_dir_for_path(path)
         dir = File.dirname(path.to_s)
         normalize_dir(dir == "." ? "" : dir)
       end

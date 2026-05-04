@@ -113,6 +113,15 @@ nav:
   - "*.md"
 ```
 
+Use `hide` in a directory's `.nav.yml` to keep that directory out of generated batches, explicit directory
+references, and child nav-file processing:
+
+```yaml
+hide: true
+nav:
+  - index.md
+```
+
 ## Demo
 
 A small example site lives in [`demo/`](demo). From the gem root, run:

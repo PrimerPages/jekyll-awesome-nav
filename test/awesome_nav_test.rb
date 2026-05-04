@@ -115,8 +115,9 @@ class AwesomeNavTest < Minitest::Test
     titles = nav.map { |item| item["title"] }
     guide_titles = nav[2]["children"].map { |item| item["title"] }
     api_titles = nav[7]["children"].map { |item| item["title"] }
+    expected_titles = ["Getting Started", "Explicit Hidden", "User Guides", "Reference", "Page Ten", "Page Two", "Changelog", "API"]
 
-    assert_equal ["Getting Started", "Explicit Hidden", "User Guides", "Reference", "Page Ten", "Page Two", "Changelog", "API"], titles
+    assert_equal expected_titles, titles
     assert_equal "/docs/guides/", nav[2]["url"]
     assert_equal ["Install"], guide_titles
     assert_equal %w[Auth Users], api_titles
@@ -140,6 +141,15 @@ class AwesomeNavTest < Minitest::Test
     assert_includes titles, "Explicit Hidden"
     refute_includes titles, "Secret Hidden"
     refute_includes titles, "Drafts"
+  end
+
+  def test_hide_stops_hidden_subtrees_even_when_manually_referenced
+    site = process_site("nav_features")
+    page = find_page(site, "docs/getting-started.md")
+    titles = page.data["awesome_nav"].map { |item| item["title"] }
+
+    refute_includes titles, "Archive"
+    refute_includes titles, "Manual Hidden"
   end
 
   def test_append_unmatched_appends_generated_entries_after_manual_nav
@@ -175,8 +185,11 @@ class AwesomeNavTest < Minitest::Test
     nav_titles = nav.map { |item| item["title"] }
     local_titles = local_nav.map { |item| item["title"] }
     breadcrumb_titles = breadcrumbs.map { |item| item["title"] }
+    expected_nav_titles = [
+      "Getting Started", "Explicit Hidden", "User Guides", "Reference", "Page Ten", "Page Two", "Changelog", "API"
+    ]
 
-    assert_equal ["Getting Started", "Explicit Hidden", "User Guides", "Reference", "Page Ten", "Page Two", "Changelog", "API"], nav_titles
+    assert_equal expected_nav_titles, nav_titles
     assert_equal ["Install"], local_titles
     assert_equal ["Documentation", "User Guides", "Install"], breadcrumb_titles
     assert_equal({ "title" => "User Guides", "url" => "/docs/guides/" }, previous_item)

@@ -11,5 +11,6 @@ sort:
 nav:
   - getting-started.md
   - explicit.hidden.md
+  - Manual Hidden: manual-hidden
   - User Guides: guides
   - "*.md"
