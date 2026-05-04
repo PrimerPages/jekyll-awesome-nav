@@ -39,13 +39,30 @@ class AwesomeNavInternalTest < Minitest::Test
     site = make_site("external_override")
     config = Jekyll::AwesomeNav::Config.new(site.config["awesome_nav"])
     nav_map = Jekyll::AwesomeNav::NavFileLoader.new(site: site, config: config).load
+    items = nav_map["docs/guides"].items
 
     assert_equal ["docs/guides"], nav_map.keys
-    assert_equal ["Install Guide", "External Docs"], nav_map["docs/guides"].map(&:title)
-    assert nav_map["docs/guides"].first.reference?
-    assert_equal "install.md", nav_map["docs/guides"].first.target
-    assert_equal "https://example.com/docs", nav_map["docs/guides"].last.url
-    assert_nil nav_map["docs/guides"].last.dir
+    assert_equal ["Install Guide", "External Docs"], items.map(&:title)
+    assert items.first.reference?
+    assert_equal "install.md", items.first.target
+    assert_equal "https://example.com/docs", items.last.url
+    assert_nil items.last.dir
+  end
+
+  def test_nav_file_loader_parses_file_options
+    site = make_site("nav_features")
+    config = Jekyll::AwesomeNav::Config.new(site.config["awesome_nav"])
+    nav_file = Jekyll::AwesomeNav::NavFileLoader.new(site: site, config: config).load["docs"]
+
+    refute_nil nav_file.options
+    assert nav_file.options.append_unmatched_or(false)
+    assert_equal ["*.hidden.md", "drafts/"], nav_file.options.ignore_patterns_or([])
+    assert_equal ["Page Ten", "Page Two"], nav_file.options.sort_options_or(Jekyll::AwesomeNav::SortOptions.from(nil)).sort(
+      [
+        Jekyll::AwesomeNav::Node.page(dir: "docs/page-10", title: "Page Ten", url: "/docs/page-10/", path: "docs/page-10.md", filename: "page-10.md"),
+        Jekyll::AwesomeNav::Node.page(dir: "docs/page-2", title: "Page Two", url: "/docs/page-2/", path: "docs/page-2.md", filename: "page-2.md")
+      ]
+    ).map(&:title)
   end
 
   def test_nav_resolver_replaces_nested_subtree

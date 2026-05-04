@@ -19,10 +19,11 @@ module Jekyll
       )
         index_generated(items)
         generated_items = generated_children_for(current_dir, items)
-        override_items = @nav_map[current_dir]
-        append_unmatched = append_unmatched_for(override_items, inherited_append_unmatched)
-        sort_options = sort_options_for(override_items, inherited_sort_options)
-        ignore_patterns = ignore_patterns_for(override_items, inherited_ignore_patterns)
+        nav_file = @nav_map[current_dir]
+        override_items = nav_items(nav_file)
+        append_unmatched = nav_options(nav_file).append_unmatched_or(inherited_append_unmatched)
+        sort_options = nav_options(nav_file).sort_options_or(inherited_sort_options)
+        ignore_patterns = nav_options(nav_file).ignore_patterns_or(inherited_ignore_patterns)
 
         return resolve_generated_items(generated_items, current_dir, append_unmatched, sort_options, ignore_patterns) unless override_items
 
@@ -64,25 +65,18 @@ module Jekyll
         @generated_by_dir.fetch(current_dir, Node.section(dir: current_dir)).children
       end
 
-      def append_unmatched_for(items, inherited)
-        return inherited unless items
-        return inherited unless items.instance_variable_defined?(:@append_unmatched)
+      def nav_items(nav_file)
+        return nil unless nav_file
+        return nav_file.items if nav_file.respond_to?(:items)
 
-        !!items.instance_variable_get(:@append_unmatched)
+        nav_file
       end
 
-      def sort_options_for(items, inherited)
-        return inherited unless items
-        return inherited unless items.instance_variable_defined?(:@sort_options)
+      def nav_options(nav_file)
+        return NavFileOptions.new unless nav_file
+        return nav_file.options if nav_file.respond_to?(:options)
 
-        items.instance_variable_get(:@sort_options)
-      end
-
-      def ignore_patterns_for(items, inherited)
-        return inherited unless items
-        return inherited unless items.instance_variable_defined?(:@ignore_patterns)
-
-        items.instance_variable_get(:@ignore_patterns)
+        NavFileOptions.new
       end
 
       def same_dir_wrapper?(items, current_dir)
@@ -90,7 +84,7 @@ module Jekyll
       end
 
       def raw_same_dir_wrapper?(current_dir)
-        same_dir_wrapper?(Array(@nav_map[current_dir]), current_dir)
+        same_dir_wrapper?(Array(nav_items(@nav_map[current_dir])), current_dir)
       end
 
       def expand_override_items(items, current_dir, generated_items, append_unmatched, sort_options, ignore_patterns, matched)

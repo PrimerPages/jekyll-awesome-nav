@@ -23,7 +23,7 @@ Metrics/BlockLength:
   Exclude:
     - "test/**/*"
 Metrics/ClassLength:
-  Max: 240
+  Max: 250
 Metrics/CyclomaticComplexity:
   Max: 12
 Metrics/MethodLength:
