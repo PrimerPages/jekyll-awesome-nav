@@ -71,15 +71,13 @@ module Jekyll
           children = value.map.with_index do |child, child_index|
             normalize_item(child, file, dir, "#{index_label}.#{child_index + 1}")
           end
-          section_url = section_url_for(dir) || children.first&.url
-          section_path = source_path_for_section(dir)
           Node.section(
-            dir: dir_for(section_url),
+            dir: nil,
             title: title,
-            url: section_url,
+            url: nil,
             children: children,
-            path: section_path,
-            filename: File.basename(section_path)
+            path: nil,
+            filename: nil
           )
         when String
           normalize_string(value, dir, title: title)
