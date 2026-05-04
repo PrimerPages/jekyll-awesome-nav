@@ -2,7 +2,7 @@
 layout: default
 ---
 <style>
-  .awesome-nav-demo {
+  .awesome-nav-docs {
     display: grid;
     gap: 2rem;
     grid-template-columns: minmax(14rem, 18rem) minmax(0, 1fr);
@@ -11,37 +11,38 @@ layout: default
     padding: 2rem 1rem;
   }
 
-  .awesome-nav-demo__sidebar {
+  .awesome-nav-docs__sidebar {
     align-self: start;
     position: sticky;
     top: 1rem;
   }
 
-  .awesome-nav-demo__sidebar ul {
+  .awesome-nav-docs__sidebar ul {
     list-style: none;
     margin: 0;
     padding-left: 0;
   }
 
-  .awesome-nav-demo__sidebar ul ul {
+  .awesome-nav-docs__sidebar ul ul {
     margin-top: 0.25rem;
     padding-left: 1rem;
   }
 
-  .awesome-nav-demo__sidebar li {
+  .awesome-nav-docs__sidebar li {
     margin: 0.25rem 0;
   }
 
-  .awesome-nav-demo__sidebar a {
+  .awesome-nav-docs__sidebar a,
+  .awesome-nav-docs__sidebar span {
     display: block;
     padding: 0.25rem 0;
   }
 
-  .awesome-nav-demo__sidebar a[aria-current="page"] {
+  .awesome-nav-docs__sidebar a[aria-current="page"] {
     font-weight: 700;
   }
 
-  .awesome-nav-demo__breadcrumbs ol {
+  .awesome-nav-docs__breadcrumbs ol {
     display: flex;
     flex-wrap: wrap;
     gap: 0.25rem;
@@ -50,16 +51,16 @@ layout: default
     padding: 0;
   }
 
-  .awesome-nav-demo__breadcrumbs li {
+  .awesome-nav-docs__breadcrumbs li {
     margin: 0.25rem;
   }
 
-  .awesome-nav-demo__breadcrumbs li:not(:last-child)::after {
+  .awesome-nav-docs__breadcrumbs li:not(:last-child)::after {
     content: "/";
     margin-left: 0.25rem;
   }
 
-  .awesome-nav-demo__pager {
+  .awesome-nav-docs__pager {
     border-top: 1px solid var(--borderColor-default, #d0d7de);
     display: flex;
     justify-content: space-between;
@@ -69,23 +70,23 @@ layout: default
   }
 
   @media (max-width: 48rem) {
-    .awesome-nav-demo {
+    .awesome-nav-docs {
       grid-template-columns: 1fr;
     }
 
-    .awesome-nav-demo__sidebar {
+    .awesome-nav-docs__sidebar {
       position: static;
     }
   }
 </style>
 
-<div class="awesome-nav-demo">
-  <aside class="awesome-nav-demo__sidebar">
+<div class="awesome-nav-docs">
+  <aside class="awesome-nav-docs__sidebar">
     <h2>Docs</h2>
     {% if page.awesome_nav %}
       <nav aria-label="Documentation">
         <ul>
-          {% include awesome-nav-demo-tree.html items=page.awesome_nav %}
+          {% include awesome-nav-tree.html items=page.awesome_nav %}
         </ul>
       </nav>
     {% endif %}
@@ -93,7 +94,7 @@ layout: default
 
   <main class="markdown-body">
     {% if page.breadcrumbs %}
-      <nav class="awesome-nav-demo__breadcrumbs" aria-label="Breadcrumbs">
+      <nav class="awesome-nav-docs__breadcrumbs" aria-label="Breadcrumbs">
         <ol>
           {% for item in page.breadcrumbs %}
             <li>
@@ -107,7 +108,7 @@ layout: default
     <h1>{{ page.title }}</h1>
     {{ content }}
 
-    <nav class="awesome-nav-demo__pager" aria-label="Pagination">
+    <nav class="awesome-nav-docs__pager" aria-label="Pagination">
       <div>
         {% if page.awesome_nav_previous %}
           <a href="{{ page.awesome_nav_previous.url | relative_url }}">

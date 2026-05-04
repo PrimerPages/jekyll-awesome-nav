@@ -30,4 +30,4 @@ defaults:
   - scope:
       path: "docs"
     values:
-      layout: awesome_nav_demo
+      layout: docs

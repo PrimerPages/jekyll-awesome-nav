@@ -2,7 +2,7 @@
 title: Documentation
 ---
 
-This demo shows how `jekyll-awesome-nav` turns a normal folder of Markdown files into navigation data your layouts can render.
+These docs show how `jekyll-awesome-nav` turns a normal folder of Markdown files into navigation data your layouts can render.
 
 The plugin does not require collections. It reads pages under the configured `awesome_nav.root`, builds a tree, and writes the result onto each docs page.
 
@@ -11,12 +11,12 @@ The plugin does not require collections. It reads pages under the configured `aw
 - [Getting Started]({{ "/docs/getting-started/" | relative_url }}) shows the minimum install and config.
 - [Layout Integration]({{ "/docs/guides/layouts/" | relative_url }}) shows how to render sidebars, breadcrumbs, and previous/next links.
 - [Configuration]({{ "/docs/guides/config/" | relative_url }}) explains the available plugin settings.
-- [Navigation Overrides]({{ "/docs/guides/overrides/" | relative_url }}) shows how a local `.nav.yml` replaces one section.
+- [Navigation Overrides]({{ "/docs/guides/overrides/" | relative_url }}) shows how local `.nav.yml` files customize sections.
 - [Generated Data]({{ "/docs/guides/data/" | relative_url }}) lists the page variables available to themes and layouts.
 
 ## Folder shape
 
-This demo uses a plain `docs/` folder:
+This documentation site uses a plain `docs/` folder:
 
 ```text
 docs/
@@ -25,6 +25,9 @@ docs/
 └── guides/
     ├── index.md
     ├── install.md
+    ├── layouts.md
+    ├── overrides.md
+    ├── data.md
     ├── config.md
     └── .nav.yml
 ```

@@ -38,6 +38,11 @@ Each page under the configured root receives:
 - `page.awesome_nav_local`: the local subtree for the page's directory
 - `page.awesome_nav_dir`: the directory supplying the active nav context
 - `page.breadcrumbs`: breadcrumb items derived from the final tree
+- `page.awesome_nav_previous`: the previous linked nav item, when one exists
+- `page.awesome_nav_next`: the next linked nav item, when one exists
+
+The same data is also exposed on `site.config` as `awesome_nav_tree`, `awesome_nav_local_map`, and
+`awesome_nav_files`.
 
 Titles resolve in this order:
 
@@ -64,6 +69,7 @@ Override item rules:
 - glob entries expand generated pages or directories using Ruby's stdlib glob matching
 - external URLs are preserved
 - override order is preserved exactly as written
+- manual sections are preserved as grouping sections unless they intentionally wrap the current directory
 
 Useful glob examples:
 
@@ -74,6 +80,20 @@ nav:
   - "*/"
   - "**/*.md"
   - glob: "*"
+```
+
+Recursive glob entries such as `**/*.md` are inserted as a flat list at that position. They do not preserve
+the matched files' directory nesting.
+
+Use manual sections to group items without linking the group itself:
+
+```yaml
+nav:
+  - Main:
+      - getting-started.md
+      - guides
+  - More Resources:
+      - Website: https://example.com
 ```
 
 Use `append_unmatched` to append generated local items that were not matched by the manual nav. Child `.nav.yml`
@@ -101,6 +121,9 @@ nav:
   - "*.md"
 ```
 
+`sort` is a file-level option. Per-glob options such as `- glob: "*"` with nested `sort:` are not currently
+supported.
+
 Use `ignore` to exclude generated items from glob entries and `append_unmatched`. Manual entries are still honored
 when you list them explicitly:
 
@@ -118,19 +141,20 @@ references, and child nav-file processing:
 
 ```yaml
 hide: true
-nav:
-  - index.md
 ```
 
-## Demo
+Options-only `.nav.yml` files are valid, so a hidden directory does not need a `nav:` array.
 
-A small example site lives in [`demo/`](demo). From the gem root, run:
+## Documentation Site
+
+The source for the plugin documentation site lives in [`site/`](site). From the gem root, run:
 
 ```sh
-bundle exec jekyll serve --source demo
+bundle exec jekyll serve --source site
 ```
 
-The demo layout prints `page.awesome_nav`, `page.awesome_nav_local`, and `page.breadcrumbs` so you can inspect the generated data directly.
+The docs site renders `page.awesome_nav`, `page.awesome_nav_local`, `page.breadcrumbs`, and previous/next links
+through a small layout in `site/_layouts/docs.html`.
 
 ## Development
 

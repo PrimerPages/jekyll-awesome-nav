@@ -4,7 +4,7 @@ title: Layout Integration
 
 `jekyll-awesome-nav` generates navigation data. Your layout renders it.
 
-This demo uses its own small layout at `demo/_layouts/awesome_nav_demo.html`, with a recursive include at `demo/_includes/awesome-nav-demo-tree.html`.
+This site uses its own small layout at `site/_layouts/docs.html`, with a recursive include at `site/_includes/awesome-nav-tree.html`.
 
 You can use those files as a starting point when wiring the same data into another Jekyll theme.
 
@@ -17,7 +17,7 @@ defaults:
   - scope:
       path: "docs"
     values:
-      layout: awesome_nav_demo
+      layout: docs
 ```
 
 Inside that layout, check for generated navigation before rendering plugin-specific UI:
