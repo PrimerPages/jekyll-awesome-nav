@@ -5,6 +5,8 @@ require "yaml"
 module Jekyll
   module AwesomeNav
     class NavFileLoader
+      OPTION_KEYS = %w[append_unmatched hide ignore sort].freeze
+
       def initialize(site:, config:)
         @site = site
         @config = config
@@ -25,18 +27,23 @@ module Jekyll
 
       def load_file(file, dir)
         data = YAML.safe_load_file(file, permitted_classes: [], aliases: false)
-        raise Error, "expected a mapping with a nav array" unless data.is_a?(Hash)
+        raise Error, "expected a mapping" unless data.is_a?(Hash)
 
         nav = data["nav"]
-        raise Error, "expected nav to be an array" unless nav.is_a?(Array)
+        raise Error, "expected nav to be an array" if data.key?("nav") && !nav.is_a?(Array)
+        raise Error, "expected nav to be an array or supported options" unless data.key?("nav") || options_only?(data)
 
-        items = nav.map.with_index do |item, index|
+        items = Array(nav).map.with_index do |item, index|
           normalize_item(item, file, dir, (index + 1).to_s)
         end
         NavFile.new(items: items, options: NavFileOptions.from(data))
       rescue Psych::Exception, Error => e
         Jekyll.logger.warn("AwesomeNav:", "Could not load #{file}: #{e.message}")
         nil
+      end
+
+      def options_only?(data)
+        data.keys.any? { |key| OPTION_KEYS.include?(key.to_s) }
       end
 
       def normalize_item(item, file, dir, index_label)
