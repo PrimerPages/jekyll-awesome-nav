@@ -106,35 +106,6 @@ module Jekyll
         end
       end
 
-      def resolved_source_path(value, dir)
-        value = value.to_s.strip
-        raise Error, "navigation path cannot be empty" if value.empty?
-        return value if Utils.external_url?(value)
-
-        source_path_for(value, dir)
-      end
-
-      def resolved_url_for_source_path(value, source_path)
-        return value if Utils.external_url?(value)
-
-        @page_urls_by_path.fetch(source_path) { fallback_url_for(source_path) }
-      end
-
-      def source_path_for(value, dir)
-        clean_value = Utils.normalize_dir(value)
-        candidates = []
-        candidates << Utils.normalize_dir(File.join(dir, clean_value)) unless dir.empty?
-        candidates << Utils.normalize_dir(File.join(@config.root_dir, clean_value))
-        candidates << clean_value
-
-        candidates.find { |candidate| @page_urls_by_path.key?(candidate) } || candidates.first
-      end
-
-      def fallback_url_for(source_path)
-        without_extension = source_path.sub(%r{\.[^./]+\z}, "")
-        Utils.normalize_url(without_index(without_extension))
-      end
-
       def section_url_for(dir)
         normalized = Utils.normalize_dir(dir)
         @page_urls_by_path[normalized] || @page_urls_by_path[File.join(normalized, "index.md")]
@@ -147,10 +118,6 @@ module Jekyll
 
       def without_index(path)
         path.sub(%r{(^|/)index(\.[^./]+)?\z}, "")
-      end
-
-      def title_for_path(path)
-        Utils.titleize(File.basename(path, File.extname(path)))
       end
 
       def dir_for(url)
