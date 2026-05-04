@@ -3,7 +3,7 @@ layout: profile
 title: Jekyll Awesome Nav
 permalink: /
 links:
-  - name: Browse the demo docs
+  - name: Browse the docs
     url: /docs/
     octicon: file
   - name: Install the gem
@@ -56,10 +56,11 @@ Then create docs pages under `docs/`. If you want a section to use a custom stru
 
 ## This site
 
-This demo site doubles as the plugin info site. The docs section on this site demonstrates:
+This site is the plugin documentation source. The docs section demonstrates:
 
 - automatically generated navigation
 - a local `.nav.yml` override in `docs/guides/`
+- glob expansion and generated-batch options
 - breadcrumb generation
 - per-page `awesome_nav` data for theme rendering
  
