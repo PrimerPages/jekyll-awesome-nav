@@ -150,6 +150,8 @@ class AwesomeNavTest < Minitest::Test
 
     refute_includes titles, "Archive"
     refute_includes titles, "Manual Hidden"
+    refute_includes titles, "Deep Archive"
+    refute_includes titles, "Nested Archive Override"
   end
 
   def test_append_unmatched_appends_generated_entries_after_manual_nav

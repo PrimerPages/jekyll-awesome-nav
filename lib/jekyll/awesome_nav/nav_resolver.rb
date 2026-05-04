@@ -276,6 +276,8 @@ module Jekyll
 
       def flatten_generated(items)
         Array(items).each_with_object([]) do |item, flattened|
+          next if hidden?(item)
+
           flattened << item
           flattened.concat(flatten_generated(item.children)) if item.section?
         end
