@@ -96,7 +96,7 @@ class AwesomeNavInternalTest < Minitest::Test
     pages = Jekyll::AwesomeNav::PageSet.new(site, config)
     generated = Jekyll::AwesomeNav::TreeBuilder.new(pages: pages, root_dir: config.root_dir).build
     nav_map = Jekyll::AwesomeNav::NavFileLoader.new(site: site, config: config).load
-    nav_map["docs"] = [Jekyll::AwesomeNav::Node.reference(dir: "docs", target: "*/")]
+    nav_map["docs"] = nav_file([Jekyll::AwesomeNav::Node.reference(dir: "docs", target: "*/")])
 
     resolved = Jekyll::AwesomeNav::NavResolver.new(root_dir: config.root_dir, nav_map: nav_map).apply(generated)
 
@@ -109,7 +109,7 @@ class AwesomeNavInternalTest < Minitest::Test
     config = Jekyll::AwesomeNav::Config.new(site.config["awesome_nav"])
     pages = Jekyll::AwesomeNav::PageSet.new(site, config)
     generated = Jekyll::AwesomeNav::TreeBuilder.new(pages: pages, root_dir: config.root_dir).build
-    nav_map = { "docs" => [Jekyll::AwesomeNav::Node.reference(dir: "docs", target: "**/*.md")] }
+    nav_map = { "docs" => nav_file([Jekyll::AwesomeNav::Node.reference(dir: "docs", target: "**/*.md")]) }
 
     resolved = Jekyll::AwesomeNav::NavResolver.new(root_dir: config.root_dir, nav_map: nav_map).apply(generated)
 
@@ -140,5 +140,11 @@ class AwesomeNavInternalTest < Minitest::Test
       ],
       Jekyll::AwesomeNav::Serializer.serialize_tree(nodes)
     )
+  end
+
+  private
+
+  def nav_file(items)
+    Jekyll::AwesomeNav::NavFile.new(items: items, options: Jekyll::AwesomeNav::NavFileOptions.new)
   end
 end
