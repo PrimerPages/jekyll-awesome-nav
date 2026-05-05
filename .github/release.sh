@@ -1,59 +1,83 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-load_env_file() {
-  local env_file=".env"
-  if [[ -f "$env_file" ]]; then
-    echo "Loading environment variables from $env_file..."
-    set -a
-    # shellcheck disable=SC1090
-    source "$env_file"
-    set +a
+usage() {
+  echo "Usage: $0 <version> [--publish]"
+}
+
+normalize_version() {
+  local version="$1"
+  version="${version#v}"
+
+  if ! [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+([.-][0-9A-Za-z.-]+)?$ ]]; then
+    echo "Invalid version format: $1" >&2
+    echo "Expected a RubyGems-compatible version such as 1.2.3 or v1.2.3." >&2
+    exit 1
   fi
+  if [[ "$version" == "0.0.0" ]]; then
+    echo "Refusing to release unstamped source version 0.0.0." >&2
+    exit 1
+  fi
+
+  printf '%s\n' "$version"
+}
+
+update_version_file() {
+  local version="$1"
+  local version_file="lib/jekyll/awesome_nav/version.rb"
+
+  if [[ ! -f "$version_file" ]]; then
+    echo "Version file not found: $version_file" >&2
+    exit 1
+  fi
+
+  ruby -e '
+    version_file, version = ARGV
+    content = File.read(version_file)
+    unless content.match?(/VERSION = "[^"]+"/)
+      warn "VERSION constant not found in #{version_file}"
+      exit 1
+    end
+    updated = content.sub(/VERSION = "[^"]+"/, "VERSION = \"#{version}\"")
+    File.write(version_file, updated)
+  ' "$version_file" "$version"
+  echo "Updated $version_file to version $version"
 }
 
 build_gem() {
-  local gemspec_file="$1"
+  local version="$1"
+  local gemspec_file="jekyll-awesome-nav.gemspec"
+  local gem_file="pkg/jekyll-awesome-nav-${version}.gem"
 
-  if [[ ! -f "$gemspec_file" ]]; then
-    echo "Error: Gemspec file '$gemspec_file' not found."
-    exit 1
-  fi
-
-  gem build "$gemspec_file" | awk '/File:/ {print $2}'
+  mkdir -p pkg
+  gem build "$gemspec_file" --output "$gem_file" >/dev/null
+  echo "$gem_file"
 }
 
-setup_rubygems_credentials() {
-  if [[ -z "${RUBYGEMS_USERNAME:-}" || -z "${RUBYGEMS_API_KEY:-}" ]]; then
-    echo "Error: RUBYGEMS_USERNAME and RUBYGEMS_API_KEY environment variables must be set."
-    exit 1
-  fi
-
-  mkdir -p ~/.gem
-  echo -e "---\n:rubygems_api_key: $RUBYGEMS_API_KEY" > ~/.gem/credentials
-  chmod 0600 ~/.gem/credentials
-}
-
-upload_gem() {
+publish_gem() {
   local gem_file="$1"
 
-  if [[ ! -f "$gem_file" ]]; then
-    echo "Error: Gem file '$gem_file' not found."
-    exit 1
-  fi
-
-  gem push "$gem_file" --host https://rubygems.org
+  gem push "$gem_file"
 }
 
-if [[ "$#" -ne 1 ]]; then
-  echo "Usage: $0 <path_to_gemspec_file>"
+if [[ "$#" -lt 1 || "$#" -gt 2 ]]; then
+  usage >&2
   exit 1
 fi
 
-load_env_file
-generated_gem_file="$(build_gem "$1")"
-echo "Generated gem file: $generated_gem_file"
+raw_version="$1"
+publish="${2:-}"
 
-setup_rubygems_credentials
-upload_gem "$generated_gem_file"
-echo "Pushed gem file: $generated_gem_file"
+if [[ -n "$publish" && "$publish" != "--publish" ]]; then
+  usage >&2
+  exit 1
+fi
+
+version="$(normalize_version "$raw_version")"
+update_version_file "$version"
+gem_file="$(build_gem "$version")"
+echo "Built $gem_file"
+
+if [[ "$publish" == "--publish" ]]; then
+  publish_gem "$gem_file"
+fi

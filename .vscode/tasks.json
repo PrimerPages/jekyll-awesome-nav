@@ -24,7 +24,17 @@
       "problemMatcher": []
     },
     {
-      "label": "Build Demo",
+      "label": "Lint",
+      "type": "shell",
+      "command": "bundle exec rubocop",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "group": "build",
+      "problemMatcher": []
+    },
+    {
+      "label": "Build Docs Site",
       "type": "shell",
       "command": "bundle exec jekyll build --source demo --destination /tmp/jekyll-awesome-nav-demo-site --disable-disk-cache",
       "options": {
