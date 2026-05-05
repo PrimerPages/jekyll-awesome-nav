@@ -22,3 +22,5 @@ module Jekyll
     class Error < StandardError; end
   end
 end
+
+Jekyll::AwesomeNav.send(:warn_if_unstamped_version)

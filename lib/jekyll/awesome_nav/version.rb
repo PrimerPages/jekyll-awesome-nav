@@ -15,7 +15,5 @@ module Jekyll
       @unstamped_version_warning_emitted = true
     end
     private_class_method :warn_if_unstamped_version
-
-    warn_if_unstamped_version
   end
 end
