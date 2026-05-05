@@ -109,9 +109,15 @@ module Jekyll
           return [resolve_local_section(applied_item, current_dir, generated_items, context, matched)]
         end
 
-        if item_dir && item_dir != current_dir
-          applied_item = with_resolved_children(applied_item, item_dir, context)
+        if applied_item.section? && item_dir.nil?
+          if same_dir_manual_wrapper?(applied_item, current_dir)
+            return [resolve_local_section(same_dir_section(applied_item, current_dir), current_dir, generated_items, context, matched)]
+          end
+
+          return [resolve_manual_section(applied_item, current_dir, generated_items, context, matched)]
         end
+
+        applied_item = with_resolved_children(applied_item, item_dir, context) if item_dir && item_dir != current_dir
 
         [applied_item]
       end

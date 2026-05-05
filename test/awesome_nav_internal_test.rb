@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require "stringio"
 require_relative "test_helper"
 
 class AwesomeNavInternalTest < Minitest::Test
@@ -17,6 +18,18 @@ class AwesomeNavInternalTest < Minitest::Test
     end
 
     assert_equal "awesome_nav config must be a mapping", error.message
+  end
+
+  def test_unstamped_source_version_warns_with_release_guidance
+    output = StringIO.new
+    Jekyll::AwesomeNav.instance_variable_set(:@unstamped_version_warning_emitted, false)
+
+    Jekyll::AwesomeNav.send(:warn_if_unstamped_version, output)
+
+    assert_includes output.string, "unstamped source version 0.0.0"
+    assert_includes output.string, "Release builds should stamp"
+  ensure
+    Jekyll::AwesomeNav.instance_variable_set(:@unstamped_version_warning_emitted, true)
   end
 
   def test_tree_builder_builds_expected_node_structure

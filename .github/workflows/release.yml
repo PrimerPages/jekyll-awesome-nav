@@ -15,12 +15,15 @@ on:
         default: true
         type: boolean
 
+env:
+  RELEASE_VERSION: ${{ github.event.release.tag_name || inputs.version }}
+
 jobs:
   build-gem:
     name: Build gem
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: write
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -30,25 +33,9 @@ jobs:
       - name: Setup Ruby
         uses: ruby/setup-ruby@v1.305.0
 
-      - name: Check release version matches
-        shell: bash
-        env:
-          RELEASE_VERSION: ${{ github.event.release.tag_name || inputs.version }}
-        run: |
-          VERSION="$(ruby -Ilib -rjekyll/awesome_nav/version -e 'puts Jekyll::AwesomeNav::VERSION')"
-          RELEASE_VERSION="${RELEASE_VERSION#v}"
-          if [ "$VERSION" != "$RELEASE_VERSION" ]; then
-            echo "Version from gem: $VERSION"
-            echo "Version from release: $RELEASE_VERSION"
-            echo "Versions do not match!"
-            exit 1
-          fi
-
       - name: Build gem
-        run: |
-          mkdir -p pkg
-          VERSION="$(ruby -Ilib -rjekyll/awesome_nav/version -e 'puts Jekyll::AwesomeNav::VERSION')"
-          gem build jekyll-awesome-nav.gemspec --output "pkg/jekyll-awesome-nav-${VERSION}.gem"
+        shell: bash
+        run: .github/release.sh "$RELEASE_VERSION"
 
       - name: Upload built gem artifact
         uses: actions/upload-artifact@v7.0.1
@@ -57,6 +44,12 @@ jobs:
           path: pkg/*.gem
           if-no-files-found: error
           retention-days: 7
+
+      - name: Upload gem to GitHub Release
+        if: ${{ github.event_name == 'release' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release upload "$RELEASE_VERSION" pkg/*.gem --clobber
 
   publish-gem:
     name: Publish gem

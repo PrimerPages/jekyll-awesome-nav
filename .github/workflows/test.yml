@@ -1,4 +1,4 @@
-name: CI jekyll plugin
+name: Test jekyll plugin
 
 on:
   push:
@@ -49,7 +49,7 @@ jobs:
           bundler-cache: true
 
       - name: Run tests
-        run: .github/test.sh
+        run: bundle exec rake test
 
       - name: Show installed gems
         if: failure()
@@ -79,8 +79,8 @@ jobs:
           ruby-version: ${{ matrix.ruby }}
           bundler-cache: true
 
-      - name: Build demo site
-        run: .github/build.sh
+      - name: Build docs site
+        run: bundle exec jekyll build --source site --destination _site
 
       - name: Show installed gems
         if: failure()
