@@ -8,6 +8,7 @@ gem "jekyll", ENV["JEKYLL_VERSION"] if ENV["JEKYLL_VERSION"]
 
 gem "jekyll-seo-tag"
 gem "jekyll-theme-profile"
+gem "jekyll-toc"
 gem "minitest", "~> 5.0"
 gem "rake", "~> 13.0"
 gem "rubocop", require: false

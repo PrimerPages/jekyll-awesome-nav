@@ -15,12 +15,15 @@ nav:
   - name: Getting Started
     url: /docs/getting-started/
 plugins:
-  - jekyll-seo-tag
   - jekyll-awesome-nav
+  - jekyll-seo-tag
+  - jekyll-toc
 awesome_nav:
   enabled: true
   root: docs
   nav_filename: .nav.yml
+toc:
+  max_level: 2 # default: 6
 markdown: kramdown
 defaults:
   - scope:
@@ -30,4 +33,5 @@ defaults:
   - scope:
       path: "docs"
     values:
-      layout: docs
+      layout: awesome_nav_demo
+      toc: true
