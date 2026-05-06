@@ -154,7 +154,7 @@ bundle exec jekyll serve --source site
 ```
 
 The docs site renders `page.awesome_nav`, `page.awesome_nav_local`, `page.breadcrumbs`, and previous/next links
-through a small layout in `site/_layouts/docs.html`.
+through a small layout in `site/_layouts/awesome_nav_demo.html`.
 
 ## Development
 

@@ -1,128 +1,405 @@
 ---
 layout: default
 ---
+{% assign nav_title = page.nav_title | default: page.title %}
+{% assign docs_root = site.awesome_nav.root | default: "docs" %}
+{% assign local_nav = page.awesome_nav_local %}
+{% assign previous_item = page.awesome_nav_previous %}
+{% assign next_item = page.awesome_nav_next %}
+
 <style>
-  .awesome-nav-docs {
+
+  html {
+    scrollbar-gutter: stable;
+  }
+
+  body {
+    overflow-y: scroll;
+  }
+
+  .awesome-nav-demo {
+    min-height: calc(100vh - var(--topbar-height, 0rem));
+    position: relative;
+  }
+
+  .awesome-nav-demo::before {
+    content: "";
+    inset: 0;
+    pointer-events: none;
+    position: absolute;
+  }
+
+  .awesome-nav-demo a {
+    color: inherit;
+  }
+
+  .awesome-nav-demo__wrap {
     display: grid;
     gap: 2rem;
-    grid-template-columns: minmax(14rem, 18rem) minmax(0, 1fr);
-    max-width: 72rem;
+    grid-template-columns: minmax(15rem, 18rem) minmax(0, 1fr) minmax(13rem, 15rem);
     margin: 0 auto;
-    padding: 2rem 1rem;
+    max-width: 82rem;
+    padding: 2rem 1rem 4rem;
+    position: relative;
+    z-index: 1;
   }
 
-  .awesome-nav-docs__sidebar {
+  .awesome-nav-demo__sidebar,
+  .awesome-nav-demo__toc {
     align-self: start;
+    max-height: calc(100vh - var(--topbar-height, 4rem) - 2rem);
+    overflow: auto;
+    padding: 1rem;
     position: sticky;
-    top: 1rem;
+    top: calc(var(--topbar-height, 4rem) + 1rem);
   }
 
-  .awesome-nav-docs__sidebar ul {
+  .awesome-nav-demo__brand {
+    align-items: center;
+    display: flex;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+    padding-bottom: 1rem;
+  }
+
+  .awesome-nav-demo__brand-mark {
+    align-items: end;
+    aspect-ratio: 1;
+    display: grid;
+    flex: 0 0 2.75rem;
+    gap: 0.2rem;
+    grid-template-columns: repeat(3, 1fr);
+    padding: 0.55rem;
+  }
+
+  .awesome-nav-demo__brand-mark span {
+    min-height: 0.55rem;
+  }
+
+  .awesome-nav-demo__brand-mark span:nth-child(2) {
+    min-height: 1.45rem;
+  }
+
+  .awesome-nav-demo__brand-mark span:nth-child(3) {
+    min-height: 1.05rem;
+  }
+
+  .awesome-nav-demo__brand strong,
+  .awesome-nav-demo__brand small {
+    display: block;
+  }
+
+  .awesome-nav-demo__brand small,
+  .awesome-nav-demo__eyebrow,
+  .awesome-nav-demo__meta {
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .awesome-nav-demo__tree,
+  .awesome-nav-demo__tree ul,
+  .awesome-nav-demo__local-list,
+  .awesome-nav-demo__local-list li {
     list-style: none;
     margin: 0;
-    padding-left: 0;
+    padding: 0;
   }
 
-  .awesome-nav-docs__sidebar ul ul {
-    margin-top: 0.25rem;
-    padding-left: 1rem;
+  .awesome-nav-demo__tree ul {
+    margin: 0.25rem 0 0.35rem 0.7rem;
+    padding-left: 0.7rem;
   }
 
-  .awesome-nav-docs__sidebar li {
-    margin: 0.25rem 0;
+  .awesome-nav-demo__tree li,
+  .awesome-nav-demo__local-list li {
+    margin: 0.12rem 0;
   }
 
-  .awesome-nav-docs__sidebar a,
-  .awesome-nav-docs__sidebar span {
+  .awesome-nav-demo__tree a,
+  .awesome-nav-demo__tree span,
+  .awesome-nav-demo__local-list a,
+  .awesome-nav-demo__local-list span {
     display: block;
-    padding: 0.25rem 0;
+    line-height: 1.35;
+    overflow-wrap: anywhere;
+    padding: 0.42rem 0.55rem;
+    text-decoration: none;
   }
 
-  .awesome-nav-docs__sidebar a[aria-current="page"] {
+  .awesome-nav-demo__tree span,
+  .awesome-nav-demo__local-list span {
     font-weight: 700;
   }
 
-  .awesome-nav-docs__breadcrumbs ol {
+  .awesome-nav-demo__tree a[aria-current="page"],
+  .awesome-nav-demo__local-list a[aria-current="page"] {
+    font-weight: 800;
+  }
+
+  .awesome-nav-demo__main {
+    min-width: 0;
+  }
+
+  .awesome-nav-demo__hero {
+    margin: 0 0 1.25rem;
+    padding: 1.25rem 0.25rem 0;
+  }
+
+  .awesome-nav-demo__eyebrow {
+    margin: 0 0 0.75rem;
+  }
+
+  .awesome-nav-demo__title {
+    font-size: clamp(2.8rem, 7vw, 5.8rem);
+    letter-spacing: -0.07em;
+    line-height: 0.9;
+    margin: 0;
+    max-width: 12ch;
+  }
+
+  .awesome-nav-demo__breadcrumbs {
+    font-size: 0.9rem;
+    margin-top: 1rem;
+  }
+
+  .awesome-nav-demo__breadcrumbs ol {
     display: flex;
     flex-wrap: wrap;
     gap: 0.25rem;
     list-style: none;
-    margin: 0 0 1rem;
+    margin: 0;
     padding: 0;
   }
 
-  .awesome-nav-docs__breadcrumbs li {
-    margin: 0.25rem;
-  }
-
-  .awesome-nav-docs__breadcrumbs li:not(:last-child)::after {
+  .awesome-nav-demo__breadcrumbs li:not(:last-child)::after {
     content: "/";
     margin-left: 0.25rem;
   }
 
-  .awesome-nav-docs__pager {
-    border-top: 1px solid var(--borderColor-default, #d0d7de);
+  .awesome-nav-demo__mobile-summary {
+    display: none;
+    margin-bottom: 1rem;
+  }
+
+  .awesome-nav-demo__mobile-summary summary {
+    cursor: pointer;
+    font-weight: 800;
+    list-style: none;
+    padding: 0.85rem 1rem;
+  }
+
+  .awesome-nav-demo__mobile-summary summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .awesome-nav-demo__mobile-summary nav {
+    padding: 0.75rem;
+  }
+
+  .awesome-nav-demo__content {
+    padding: clamp(1.25rem, 4vw, 3rem);
+  }
+
+  .awesome-nav-demo__content > h1:first-child {
+    display: none;
+  }
+
+  .awesome-nav-demo__toc h2,
+  .awesome-nav-demo__sidebar h2 {
+    font-size: 0.95rem;
+    margin: 0 0 0.75rem;
+  }
+
+  .awesome-nav-demo__toc {
     display: flex;
-    justify-content: space-between;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+
+  .awesome-nav-demo__toc-section {
+    padding-bottom: 1.25rem;
+  }
+
+  .awesome-nav-demo__toc-section:last-child {
+    border-bottom: 0;
+    padding-bottom: 0;
+  }
+
+  .awesome-nav-demo__meta {
+    margin: 0.35rem 0 0;
+    overflow-wrap: anywhere;
+  }
+
+  .awesome-nav-demo__pager {
+    display: grid;
     gap: 1rem;
-    margin-top: 3rem;
-    padding-top: 1rem;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    margin-top: 1.25rem;
+  }
+
+  .awesome-nav-demo__pager a {
+    border-radius: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    min-height: 6rem;
+    padding: 1rem;
+    text-decoration: none;
+  }
+
+  .awesome-nav-demo__pager a:last-child {
+    text-align: right;
+  }
+
+  .awesome-nav-demo__pager span {
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .awesome-nav-demo__pager strong {
+    font-size: 1.1rem;
+  }
+
+  .awesome-nav-demo__empty-state {
+    border-radius: 1.25rem;
+    padding: 1rem;
+  }
+
+  @media (max-width: 68rem) {
+    .awesome-nav-demo__wrap {
+      grid-template-columns: minmax(14rem, 17rem) minmax(0, 1fr);
+    }
+
+    .awesome-nav-demo__toc {
+      display: none;
+    }
   }
 
   @media (max-width: 48rem) {
-    .awesome-nav-docs {
+    .awesome-nav-demo__wrap {
+      display: block;
+      padding-top: 1rem;
+    }
+
+    .awesome-nav-demo__sidebar {
+      display: none;
+    }
+
+    .awesome-nav-demo__mobile-summary {
+      display: block;
+    }
+
+    .awesome-nav-demo__hero {
+      padding-top: 0.5rem;
+    }
+
+    .awesome-nav-demo__title {
+      font-size: clamp(2.6rem, 15vw, 4.2rem);
+    }
+
+    .awesome-nav-demo__pager {
       grid-template-columns: 1fr;
     }
 
-    .awesome-nav-docs__sidebar {
-      position: static;
+    .awesome-nav-demo__pager a:last-child {
+      text-align: left;
     }
   }
 </style>
 
-<div class="awesome-nav-docs">
-  <aside class="awesome-nav-docs__sidebar">
-    <h2>Docs</h2>
-    {% if page.awesome_nav %}
-      <nav aria-label="Documentation">
-        <ul>
-          {% include awesome-nav-tree.html items=page.awesome_nav %}
-        </ul>
-      </nav>
-    {% endif %}
-  </aside>
-
-  <main class="markdown-body">
-    {% if page.breadcrumbs %}
-      <nav class="awesome-nav-docs__breadcrumbs" aria-label="Breadcrumbs">
-        <ol>
-          {% for item in page.breadcrumbs %}
-            <li>
-              <a href="{{ item.url | relative_url }}">{{ item.title }}</a>
-            </li>
-          {% endfor %}
-        </ol>
-      </nav>
-    {% endif %}
-
-    <h1>{{ page.title }}</h1>
-    {{ content }}
-
-    <nav class="awesome-nav-docs__pager" aria-label="Pagination">
-      <div>
-        {% if page.awesome_nav_previous %}
-          <a href="{{ page.awesome_nav_previous.url | relative_url }}">
-            Previous: {{ page.awesome_nav_previous.title }}
-          </a>
-        {% endif %}
+<div class="awesome-nav-demo">
+  <div class="awesome-nav-demo__wrap">
+    <aside class="awesome-nav-demo__sidebar" aria-label="Documentation navigation">
+      <div class="awesome-nav-demo__brand">
+        <span>
+          <strong>{{ site.title | default: "Awesome Nav" }}</strong>
+          <small>{{ docs_root }} navigation</small>
+        </span>
       </div>
-      <div>
-        {% if page.awesome_nav_next %}
-          <a href="{{ page.awesome_nav_next.url | relative_url }}">
-            Next: {{ page.awesome_nav_next.title }}
-          </a>
+
+      {% if page.awesome_nav %}
+        <nav aria-label="Documentation">
+          <ul class="awesome-nav-demo__tree">
+            {% include awesome-nav-tree.html items=page.awesome_nav %}
+          </ul>
+        </nav>
+      {% else %}
+        <p class="awesome-nav-demo__empty-state">Navigation data is not available for this page.</p>
+      {% endif %}
+    </aside>
+
+    <main class="awesome-nav-demo__main">
+      <section class="awesome-nav-demo__hero">
+        <p class="awesome-nav-demo__eyebrow">Awesome nav demo</p>
+        <h1 class="awesome-nav-demo__title">{{ nav_title }}</h1>
+
+        {% if page.breadcrumbs %}
+          <nav class="awesome-nav-demo__breadcrumbs" aria-label="Breadcrumbs">
+            <ol>
+              {% for item in page.breadcrumbs %}
+                <li>
+                  <a href="{{ item.url | relative_url }}">{{ item.title }}</a>
+                </li>
+              {% endfor %}
+            </ol>
+          </nav>
         {% endif %}
-      </div>
-    </nav>
-  </main>
+      </section>
+
+      {% if page.awesome_nav %}
+        <details class="awesome-nav-demo__mobile-summary">
+          <summary aria-label="Browse documentation" title="Browse documentation">&#9776;</summary>
+          <nav aria-label="Documentation">
+            <ul class="awesome-nav-demo__tree">
+              {% include awesome-nav-tree.html items=page.awesome_nav %}
+            </ul>
+          </nav>
+        </details>
+      {% endif %}
+
+      <article class="awesome-nav-demo__content markdown-body">
+        {{ content | inject_anchors }}
+      </article>
+
+      {% if previous_item or next_item %}
+        <nav class="awesome-nav-demo__pager" aria-label="Pagination">
+          {% if previous_item %}
+            <a href="{{ previous_item.url | relative_url }}">
+              <span>Previous</span>
+              <strong>{{ previous_item.title }}</strong>
+            </a>
+          {% else %}
+            <span></span>
+          {% endif %}
+
+          {% if next_item %}
+            <a href="{{ next_item.url | relative_url }}">
+              <span>Next</span>
+              <strong>{{ next_item.title }}</strong>
+            </a>
+          {% else %}
+            <span></span>
+          {% endif %}
+        </nav>
+      {% endif %}
+    </main>
+
+    <aside class="awesome-nav-demo__toc" aria-label="Current navigation context">
+      <section class="awesome-nav-demo__toc-section">
+        <h2>In this article</h2>
+        {% if local_nav %}
+          <nav aria-label="This section">
+            <ul class="awesome-nav-demo__local-list">
+              {{ content | toc_only }}
+            </ul>
+          </nav>
+        {% else %}
+        {% endif %}
+      </section>
+    </aside>
+  </div>
 </div>

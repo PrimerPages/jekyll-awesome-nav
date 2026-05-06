@@ -55,14 +55,14 @@ The plugin builds navigation from these pages during the normal Jekyll build. Yo
 
 ## Render it
 
-If your theme already supports `jekyll-awesome-nav`, choose that docs layout for pages under your docs root. This site uses its docs layout through defaults:
+If your theme already supports `jekyll-awesome-nav`, choose that docs layout for pages under your docs root. This site uses a small demo layout through defaults:
 
 ```yaml
 defaults:
   - scope:
       path: "docs"
     values:
-      layout: docs
+      layout: awesome_nav_demo
 ```
 
 If your theme does not support it yet, use the examples in [Layout Integration]({{ "/docs/guides/layouts/" | relative_url }}) to wire the data into your own layout.

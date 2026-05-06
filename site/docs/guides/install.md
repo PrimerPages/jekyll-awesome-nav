@@ -47,7 +47,7 @@ defaults:
   - scope:
       path: "docs"
     values:
-      layout: docs
+      layout: awesome_nav_demo
 ```
 
 The plugin generates the data. The layout decides how that data looks.
