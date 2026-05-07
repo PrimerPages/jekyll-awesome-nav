@@ -1,0 +1,5 @@
+nav:
+  - Guides:
+      - Install Guide: install.md
+      - Configuration: config.md
+      - "*"

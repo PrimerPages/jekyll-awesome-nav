@@ -4,5 +4,11 @@ plugins:
   - jekyll-awesome-nav
 awesome_nav:
   enabled: true
-  root: docs
+  root: ""
   nav_filename: .nav.yml
+defaults:
+  - scope:
+      path: ""
+    values:
+      layout: awesome_nav_demo
+      toc: true
