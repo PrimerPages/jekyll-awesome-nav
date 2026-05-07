@@ -28,6 +28,37 @@ awesome_nav:
   enabled: true
   root: docs
   nav_filename: .nav.yml
+  include:
+    - "**/*.md"
+    - "**/*.html"
+    - "**/*.htm"
+  ignore:
+    - "assets/**"
+```
+
+## Configuration
+
+`awesome_nav` options:
+
+- `enabled` (default: `true`): enable or disable the plugin.
+- `root` (default: `docs`): source directory root to build navigation from.
+- `nav_filename` (default: `.nav.yml`): per-directory override filename.
+- `include` (default: `["**/*.md", "**/*.html", "**/*.htm"]`): source path globs that are eligible for navigation.
+- `ignore` (default: `["assets/**"]`): source path globs excluded from navigation.
+
+`include`/`ignore` apply to source paths in `site.pages` before tree generation. If `include` is set, a page must match
+at least one include pattern to be considered. Ignore patterns are then applied to remove matches.
+
+Example custom filtering:
+
+```yaml
+awesome_nav:
+  root: ""
+  include:
+    - "README.md"
+    - "docs/**/*.md"
+  ignore:
+    - "docs/drafts/**"
 ```
 
 ## Exposed Page Data

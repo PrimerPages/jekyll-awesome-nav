@@ -6,7 +6,9 @@ module Jekyll
       DEFAULTS = {
         "enabled" => true,
         "root" => "docs",
-        "nav_filename" => ".nav.yml"
+        "nav_filename" => ".nav.yml",
+        "ignore" => ["assets/**"],
+        "include" => ["**/*.md", "**/*.html", "**/*.htm"]
       }.freeze
 
       def initialize(raw_config)
@@ -25,6 +27,21 @@ module Jekyll
 
       def nav_filename
         @data["nav_filename"].to_s
+      end
+
+      def ignore_patterns
+        value = @data["ignore"]
+        return [] if value.nil?
+
+        Array(value).map { |pattern| Utils.normalize_dir(pattern.to_s) }.reject(&:empty?)
+      end
+
+      def include_patterns
+        value = @data["include"]
+        return nil if value.nil?
+
+        patterns = Array(value).map { |pattern| Utils.normalize_dir(pattern.to_s) }.reject(&:empty?)
+        patterns.empty? ? nil : patterns
       end
     end
   end
