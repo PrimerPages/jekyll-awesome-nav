@@ -10,6 +10,8 @@ class AwesomeNavInternalTest < Minitest::Test
     assert config.enabled?
     assert_equal "docs", config.root_dir
     assert_equal "_menu.yml", config.nav_filename
+    assert_equal ["assets/**"], config.ignore_patterns
+    assert_equal ["**/*.md", "**/*.html", "**/*.htm"], config.include_patterns
   end
 
   def test_config_rejects_non_hash_values
@@ -46,6 +48,67 @@ class AwesomeNavInternalTest < Minitest::Test
     assert_equal %w[Advanced Configuration Install], tree.first.children.map(&:title)
     assert_equal "docs/guides/advanced/tips.md", tree.first.children.first.children.first.path
     assert_equal "tips.md", tree.first.children.first.children.first.filename
+  end
+
+  def test_page_set_includes_all_pages_when_root_is_empty
+    site = process_site("root_site")
+    config = Jekyll::AwesomeNav::Config.new(site.config["awesome_nav"])
+    pages = Jekyll::AwesomeNav::PageSet.new(site, config)
+    paths = pages.map(&:path).sort
+
+    assert_equal "", config.root_dir
+    assert_equal(
+      [
+        "getting-started.md",
+        "guides/advanced/tips.md",
+        "guides/config.md",
+        "guides/index.md",
+        "guides/install.md",
+        "index.md"
+      ],
+      paths
+    )
+  end
+
+  def test_page_set_only_includes_markdown_and_html_pages
+    site = process_site("readme_index")
+    config = Jekyll::AwesomeNav::Config.new(site.config["awesome_nav"])
+    pages = Jekyll::AwesomeNav::PageSet.new(site, config)
+    paths = pages.map(&:path)
+
+    refute_includes paths, "assets/css/style.scss"
+    assert_includes paths, "README.md"
+    assert_includes paths, "gazebo/README.md"
+  end
+
+  def test_config_normalizes_ignore_patterns
+    config = Jekyll::AwesomeNav::Config.new("ignore" => ["/assets/**/", "vendor/**"])
+
+    assert_equal ["assets/**", "vendor/**"], config.ignore_patterns
+  end
+
+  def test_config_normalizes_include_patterns
+    config = Jekyll::AwesomeNav::Config.new("include" => ["/docs/**/", "index.md"])
+
+    assert_equal ["docs/**", "index.md"], config.include_patterns
+  end
+
+  def test_page_set_respects_include_patterns
+    site = process_site(
+      "readme_index",
+      "awesome_nav" => {
+        "enabled" => true,
+        "root" => "",
+        "nav_filename" => ".nav.yml",
+        "include" => ["README.md", "gazebo/**"],
+        "ignore" => []
+      }
+    )
+    config = Jekyll::AwesomeNav::Config.new(site.config["awesome_nav"])
+    pages = Jekyll::AwesomeNav::PageSet.new(site, config)
+    paths = pages.map(&:path).sort
+
+    assert_equal ["README.md", "gazebo/README.md"], paths
   end
 
   def test_nav_file_loader_parses_nodes_and_preserves_external_urls

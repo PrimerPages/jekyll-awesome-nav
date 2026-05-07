@@ -108,6 +108,59 @@ class AwesomeNavTest < Minitest::Test
     refute install_page.data.key?("awesome_nav")
   end
 
+  def test_assigns_nav_to_readme_index_pages
+    site = process_site("readme_index")
+    root_page = find_page(site, "README.md")
+    nested_page = find_page(site, "gazebo/README.md")
+
+    refute_nil root_page
+    refute_nil nested_page
+    assert root_page.data.key?("awesome_nav")
+    assert nested_page.data.key?("awesome_nav")
+    assert_equal "/", root_page.url
+    assert_equal "/gazebo/", nested_page.url
+  end
+
+  def test_ignores_assets_pages_when_assigning_nav
+    site = process_site("readme_index")
+    assets_page = find_page(site, "assets/css/style.scss")
+
+    return assert_nil(assets_page) if assets_page.nil?
+
+    refute assets_page.data.key?("awesome_nav")
+    refute assets_page.data.key?("awesome_nav_local")
+    refute assets_page.data.key?("awesome_nav_dir")
+    refute assets_page.data.key?("breadcrumbs")
+  end
+
+  def test_empty_root_does_not_prepend_blank_breadcrumb_title
+    site = process_site("readme_index")
+    page = find_page(site, "README.md")
+
+    refute_nil page
+    refute_nil page.data["breadcrumbs"]
+    refute_includes page.data["breadcrumbs"].map { |item| item["title"] }, ""
+  end
+
+  def test_readme_index_pages_render_as_section_links_not_nested_readme_children
+    site = process_site("readme_index")
+    page = find_page(site, "ros2/README.md")
+    ros2_item = page.data["awesome_nav"].find { |item| item["title"] == "Ros2" }
+
+    refute_nil page
+    refute_nil ros2_item
+    assert_equal "/ros2/", ros2_item["url"]
+    refute_includes Array(ros2_item["children"]).map { |item| item["title"] }, "README"
+  end
+
+  def test_empty_root_uses_root_page_title_for_prev_next
+    site = process_site("readme_index")
+    page = find_page(site, "docker-compose/README.md")
+
+    refute_nil page
+    assert_equal({ "title" => "README", "url" => "/" }, page.data["awesome_nav_previous"])
+  end
+
   def test_directory_insertion_globs_and_append_unmatched
     site = process_site("nav_features")
     page = find_page(site, "docs/getting-started.md")

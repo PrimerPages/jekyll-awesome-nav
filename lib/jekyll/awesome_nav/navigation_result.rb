@@ -85,13 +85,13 @@ module Jekyll
 
       def root_breadcrumb(page)
         title = page.data["nav_title"] || page.data["title"] || Utils.titleize(Utils.last_segment(@root_dir))
+        title = resolved_root_title if title.to_s.empty?
         [{ "title" => title, "url" => Utils.normalize_url(page.url) }]
       end
 
       def prepend_root_breadcrumb(breadcrumbs)
         root_crumb = {
-          "title" => @root_page&.data&.fetch("nav_title",
-                                             nil) || @root_page&.data&.fetch("title", nil) || Utils.titleize(Utils.last_segment(@root_dir)),
+          "title" => resolved_root_title,
           "url" => Utils.normalize_url(@root_page&.url || "/#{@root_dir}/")
         }
 
@@ -105,7 +105,7 @@ module Jekyll
           items = []
           if @root_page
             items << {
-              "title" => @root_page.data["nav_title"] || @root_page.data["title"] || Utils.titleize(Utils.last_segment(@root_dir)),
+              "title" => resolved_root_title,
               "url" => Utils.normalize_url(@root_page.url)
             }
           end
@@ -144,6 +144,17 @@ module Jekyll
 
       def deep_copy(value)
         Marshal.load(Marshal.dump(value))
+      end
+
+      def resolved_root_title
+        title = @root_page&.data&.fetch("nav_title", nil) ||
+                @root_page&.data&.fetch("title", nil) ||
+                Utils.titleize(Utils.last_segment(@root_dir))
+        if title.to_s.empty? && @root_page
+          basename = File.basename(@root_page.path.to_s, File.extname(@root_page.path.to_s))
+          title = Utils.page_title(@root_page, basename)
+        end
+        title.to_s.empty? ? "Home" : title
       end
     end
   end

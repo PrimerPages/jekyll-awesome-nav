@@ -1,0 +1,9 @@
+title: Readme Index Fixture
+permalink: pretty
+plugins:
+  - jekyll-awesome-nav
+  - jekyll-readme-index
+awesome_nav:
+  enabled: true
+  root: ""
+  nav_filename: .nav.yml
