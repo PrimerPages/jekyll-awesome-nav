@@ -34,12 +34,12 @@ module Jekyll
           current = child
         end
 
-        basename = File.basename(page.path, File.extname(page.path))
+        basename = File.basename(page_path, File.extname(page_path))
         title = Utils.page_title(page, basename)
         url = Utils.normalize_url(page.url)
 
-        if basename == "index"
-          current.title = title
+        if Utils.index_page?(page)
+          current.title = section_title_for_index(page, basename, current, title)
           current.url = url
           current.path = page_path
           current.filename = File.basename(page_path)
@@ -61,6 +61,14 @@ module Jekyll
           child.children.sort_by! { |nested| sort_key(nested) }
           sort_sections(child.children)
         end
+      end
+
+      def section_title_for_index(page, basename, current, resolved_title)
+        return resolved_title unless basename.downcase == "readme"
+        return resolved_title if page.data["nav_title"] || page.data["title"]
+        return current.title unless current.title.to_s.empty?
+
+        resolved_title
       end
 
       def sort_key(child)
