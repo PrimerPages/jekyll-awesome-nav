@@ -9,6 +9,12 @@ awesome_nav:
   enabled: true
   root: docs
   nav_filename: .nav.yml
+  include:
+    - "**/*.md"
+    - "**/*.html"
+    - "**/*.htm"
+  ignore:
+    - "assets/**"
 ```
 
 ## Options
@@ -18,6 +24,10 @@ awesome_nav:
 | `enabled` | `true` | Turns generation on or off. |
 | `root` | `docs` | Folder that contains your documentation pages. |
 | `nav_filename` | `.nav.yml` | Filename used for local subtree overrides. |
+| `include` | `["**/*.md", "**/*.html", "**/*.htm"]` | Source path globs eligible for nav generation. |
+| `ignore` | `["assets/**"]` | Source path globs excluded from nav generation. |
+
+`include` is evaluated first, then `ignore` removes matches.
 
 ## Page titles
 

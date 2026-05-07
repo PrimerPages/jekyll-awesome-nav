@@ -4,7 +4,9 @@ module Jekyll
   module AwesomeNav
     class Generator < Jekyll::Generator
       safe true
-      priority :low
+      # Run after low-priority generators (for example jekyll-readme-index),
+      # so synthetic pages are present before nav data assignment.
+      priority :lowest
 
       def generate(site)
         config = Config.new(site.config["awesome_nav"])

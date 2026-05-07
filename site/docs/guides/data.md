@@ -15,6 +15,8 @@ The plugin writes navigation data onto each page under the configured docs root.
 | `page.awesome_nav_previous` | Previous page in the resolved navigation order. |
 | `page.awesome_nav_next` | Next page in the resolved navigation order. |
 
+For README-indexed directories, these values are computed using the directory index URL (for example `/ros2/`) rather than a nested `README` leaf item.
+
 ## Tree item shape
 
 Navigation entries are hashes with a title, URL, and optional children:
@@ -36,5 +38,7 @@ The plugin also writes resolved data into `site.config` for advanced theme use:
 | `site.awesome_nav_tree` | Full resolved tree. |
 | `site.awesome_nav_local_map` | Local navigation lookup by directory. |
 | `site.awesome_nav_files` | Loaded `.nav.yml` data. |
+
+When the site uses `jekyll-readme-index`, generated README index pages are included in these resolved structures because awesome-nav runs after low-priority generators.
 
 Most layouts should prefer the `page.*` variables because they are already scoped to the current page.

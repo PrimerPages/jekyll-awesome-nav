@@ -63,7 +63,11 @@ module Jekyll
       end
 
       def index_page?(page)
-        File.basename(page.path, File.extname(page.path)) == "index"
+        basename = File.basename(source_path_for(page), File.extname(source_path_for(page))).downcase
+        return true if basename == "index"
+
+        # jekyll-readme-index can map README.* to the directory index URL.
+        basename == "readme" && normalize_url(page.url) == normalize_url(source_dir_for(page))
       end
 
       def source_dir_for(page)
