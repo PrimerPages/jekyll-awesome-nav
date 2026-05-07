@@ -10,7 +10,6 @@ gem "jekyll-readme-index"
 gem "jekyll-seo-tag"
 gem "jekyll-theme-profile"
 gem "jekyll-toc"
-gem "jekyll-readme-index"
 gem "minitest", "~> 5.0"
 gem "rake", "~> 13.0"
 gem "rubocop", require: false

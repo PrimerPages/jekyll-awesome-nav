@@ -14,3 +14,4 @@ _site/
 .jekyll-cache/
 .sass-cache/
 /vendor/
+/test/fixtures/dockerfiles/
