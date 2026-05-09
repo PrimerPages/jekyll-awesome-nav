@@ -77,7 +77,7 @@ jobs:
 
       - name: Configure RubyGems credentials
         if: ${{ github.event_name == 'release' || !inputs.dry-run }}
-        uses: rubygems/configure-rubygems-credentials@v1.0.0
+        uses: rubygems/configure-rubygems-credentials@v2.0.0
 
       - name: Validate gem artifact
         if: ${{ inputs.dry-run }}
