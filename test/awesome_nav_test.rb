@@ -228,6 +228,24 @@ class AwesomeNavTest < Minitest::Test
     refute_includes local_titles, "Advanced"
   end
 
+  def test_manual_entries_do_not_duplicate_generated_sources
+    site = process_site("manual_dedup")
+    page = find_page(site, "site/index.md")
+    nav = page.data["awesome_nav"]
+    guides_children = nav[2]["children"]
+
+    assert_equal ["Overview", "Getting Started", "Guides", "Extracted Reference"], nav.map { |item| item["title"] }
+    assert_equal "/site/", nav[0]["url"]
+    assert_equal "/site/getting-started/", nav[1]["url"]
+    assert_equal ["Overview", "Writing Guides", "Deeper Navigation"], guides_children.map { |item| item["title"] }
+    assert_equal "/site/guides/", guides_children[0]["url"]
+    assert_nil guides_children[0]["children"]
+    assert_equal "/site/guides/configuration/", guides_children[1]["url"]
+    assert_equal "/site/guides/advanced/overrides/", guides_children[2]["url"]
+    assert_equal "/site/src/extracted/", nav[3]["url"]
+    refute_includes nav.map { |item| item["title"] }, "Src"
+  end
+
   def test_nav_feature_layout_renders_tree_breadcrumbs_and_neighbors
     site = process_site("nav_features")
     page = read_output(site, "docs/guides/install/index.html")

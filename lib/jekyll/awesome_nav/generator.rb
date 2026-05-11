@@ -17,7 +17,7 @@ module Jekyll
 
         tree = TreeBuilder.new(pages: pages, root_dir: config.root_dir).build
         nav_map = NavFileLoader.new(site: site, config: config).load
-        resolved_tree = NavResolver.new(root_dir: config.root_dir, nav_map: nav_map).apply(tree, config.root_dir)
+        resolved_tree = NavResolver.new(root_dir: config.root_dir, nav_map: nav_map, root_page: pages.root_page).apply(tree, config.root_dir)
         result = NavigationResult.new(
           tree: resolved_tree,
           root_dir: config.root_dir,

@@ -5,9 +5,10 @@ module Jekyll
     class NavResolver
       ResolutionContext = Struct.new(:append_unmatched, :sort_options, :ignore_patterns, keyword_init: true)
 
-      def initialize(root_dir:, nav_map:)
+      def initialize(root_dir:, nav_map:, root_page: nil)
         @root_dir = root_dir
         @nav_map = nav_map
+        @root_page = root_page
         @generated_by_dir = {}
         @generated_by_path = {}
       end
@@ -149,7 +150,13 @@ module Jekyll
         return [] unless generated
         return [] if hidden?(generated)
 
-        return [section_page_node(generated, item.title)] if generated.section? && Utils.normalize_dir(generated.dir) == current_dir
+        if generated.section? &&
+            (Utils.normalize_dir(generated.dir) == current_dir || references_section_index?(item, current_dir, generated))
+          node = section_page_node(generated, item.title)
+          mark_matched(node, matched)
+          mark_section_consumed(generated, matched)
+          return [node]
+        end
 
         node = generated.deep_dup
         node.title = item.title if item.title
@@ -229,7 +236,10 @@ module Jekyll
           next if ignored?(item, current_dir, context.ignore_patterns)
 
           node = item.deep_dup
-          with_resolved_children(node, Utils.normalize_dir(node.dir), context)
+          pruned = prune_matched_descendants(node, matched, context, current_dir)
+          next if pruned.nil?
+
+          with_resolved_children(pruned, Utils.normalize_dir(pruned.dir), context)
         end
       end
 
@@ -240,6 +250,9 @@ module Jekyll
 
           section = @generated_by_dir[candidate]
           return section if section
+
+          root = root_page_node_for(candidate)
+          return root if root
         end
 
         nil
@@ -337,8 +350,36 @@ module Jekyll
         matched[node_key(item)]
       end
 
+      def prune_matched_descendants(item, matched, context, current_dir)
+        return nil if matched?(item, matched)
+        return item unless item.section?
+
+        child_dir = Utils.normalize_dir(item.dir)
+        pruned_children = item.children.filter_map do |child|
+          next if hidden?(child)
+          next if ignored?(child, child_dir.empty? ? current_dir : child_dir, context.ignore_patterns)
+
+          prune_matched_descendants(child.deep_dup, matched, context, child_dir.empty? ? current_dir : child_dir)
+        end
+
+        return nil if pruned_children.empty? && item.url.nil?
+
+        Node.section(
+          dir: item.dir,
+          title: item.title,
+          url: item.url,
+          children: pruned_children,
+          path: item.path,
+          filename: item.filename
+        )
+      end
+
       def node_key(item)
         item.section? ? "dir:#{Utils.normalize_dir(item.dir)}" : "path:#{Utils.normalize_dir(item.path || item.url)}"
+      end
+
+      def mark_section_consumed(item, matched)
+        matched["dir:#{Utils.normalize_dir(item.dir)}"] = true
       end
 
       def child_dir_for_item(parent_dir, item)
@@ -364,6 +405,28 @@ module Jekyll
 
         segments = path.split("/")
         File.extname(segments.last).empty? ? segments.join("/") : segments[0...-1].join("/")
+      end
+
+      def root_page_node_for(candidate)
+        return nil unless @root_page
+
+        normalized = Utils.normalize_dir(candidate)
+        root_index_path = Utils.normalize_dir(File.join(@root_dir, "index.md"))
+        return nil unless [@root_dir, root_index_path, "index.md"].include?(normalized)
+
+        Node.page(
+          dir: @root_dir,
+          title: Utils.page_title(@root_page, File.basename(@root_page.path, File.extname(@root_page.path))),
+          url: Utils.normalize_url(@root_page.url),
+          path: Utils.source_path_for(@root_page),
+          filename: File.basename(Utils.source_path_for(@root_page))
+        )
+      end
+
+      def references_section_index?(item, current_dir, generated)
+        return false unless generated.path
+
+        candidates_for(item.target, current_dir).include?(Utils.normalize_dir(generated.path))
       end
     end
   end
