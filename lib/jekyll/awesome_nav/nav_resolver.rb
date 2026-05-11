@@ -2,6 +2,9 @@
 
 module Jekyll
   module AwesomeNav
+    # This class centralizes override resolution, matching, and unmatched append
+    # behavior, so a narrow class-length suppression keeps the logic together.
+    # rubocop:disable Metrics/ClassLength
     class NavResolver
       ResolutionContext = Struct.new(:append_unmatched, :sort_options, :ignore_patterns, keyword_init: true)
 
@@ -151,7 +154,7 @@ module Jekyll
         return [] if hidden?(generated)
 
         if generated.section? &&
-            (Utils.normalize_dir(generated.dir) == current_dir || references_section_index?(item, current_dir, generated))
+           (Utils.normalize_dir(generated.dir) == current_dir || references_section_index?(item, current_dir, generated))
           node = section_page_node(generated, item.title)
           mark_matched(node, matched)
           mark_section_consumed(generated, matched)
@@ -429,5 +432,6 @@ module Jekyll
         candidates_for(item.target, current_dir).include?(Utils.normalize_dir(generated.path))
       end
     end
+    # rubocop:enable Metrics/ClassLength
   end
 end

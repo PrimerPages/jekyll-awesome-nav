@@ -232,12 +232,14 @@ class AwesomeNavTest < Minitest::Test
     site = process_site("manual_dedup")
     page = find_page(site, "site/index.md")
     nav = page.data["awesome_nav"]
+    nav_titles = nav.map { |item| item["title"] }
     guides_children = nav[2]["children"]
+    guides_titles = guides_children.map { |item| item["title"] }
 
-    assert_equal ["Overview", "Getting Started", "Guides", "Extracted Reference"], nav.map { |item| item["title"] }
+    assert_equal ["Overview", "Getting Started", "Guides", "Extracted Reference"], nav_titles
     assert_equal "/site/", nav[0]["url"]
     assert_equal "/site/getting-started/", nav[1]["url"]
-    assert_equal ["Overview", "Writing Guides", "Deeper Navigation"], guides_children.map { |item| item["title"] }
+    assert_equal ["Overview", "Writing Guides", "Deeper Navigation"], guides_titles
     assert_equal "/site/guides/", guides_children[0]["url"]
     assert_nil guides_children[0]["children"]
     assert_equal "/site/guides/configuration/", guides_children[1]["url"]
