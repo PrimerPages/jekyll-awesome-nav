@@ -258,6 +258,16 @@ class AwesomeNavTest < Minitest::Test
     assert_equal({ "title" => "Overview", "url" => "/site/" }, overview_items.first)
   end
 
+  def test_explicit_item_is_not_duplicated_by_glob_match
+    site = process_site("nav_features")
+    page = find_page(site, "docs/getting-started.md")
+    nav = page.data["awesome_nav"]
+    getting_started_items = nav.select { |item| item["title"] == "Getting Started" }
+
+    assert_equal 1, getting_started_items.length
+    assert_equal({ "title" => "Getting Started", "url" => "/docs/getting-started/" }, getting_started_items.first)
+  end
+
   def test_nav_feature_layout_renders_tree_breadcrumbs_and_neighbors
     site = process_site("nav_features")
     page = read_output(site, "docs/guides/install/index.html")
