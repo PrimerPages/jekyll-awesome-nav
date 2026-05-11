@@ -1,0 +1,15 @@
+title: Nested Manual Dedup Fixture
+permalink: pretty
+plugins:
+  - jekyll-awesome-nav
+awesome_nav:
+  enabled: true
+  root: site
+  nav_filename: .nav.yml
+defaults:
+  - scope:
+      path: ""
+    values:
+      layout: awesome_nav_demo
+      toc: true
+ 

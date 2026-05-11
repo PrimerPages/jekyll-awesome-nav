@@ -1,0 +1,19 @@
+{% for item in include.items %}
+  <li>
+    {% if item.url %}
+      <a
+        href="{{ item.url | relative_url }}"
+        {% if item.url == page.url %}aria-current="page"{% endif %}
+      >
+        {{ item.title }}
+      </a>
+    {% else %}
+      <span>{{ item.title }}</span>
+    {% endif %}
+    {% if item.children %}
+      <ul>
+        {% include awesome-nav-tree.html items=item.children %}
+      </ul>
+    {% endif %}
+  </li>
+{% endfor %}

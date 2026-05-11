@@ -268,6 +268,19 @@ class AwesomeNavTest < Minitest::Test
     assert_equal({ "title" => "Getting Started", "url" => "/docs/getting-started/" }, getting_started_items.first)
   end
 
+  def test_nested_nav_index_reference_resolves_without_duplicate_generated_items
+    site = process_site("nested_manual_dedup")
+    page = find_page(site, "site/guides/index.md")
+    nav = page.data["awesome_nav"]
+    nav_titles = nav.map { |item| item["title"] }
+
+    assert_equal ["Overview", "Writing Guides", "Deeper Navigation"], nav_titles
+    assert_equal "/site/guides/", nav[0]["url"]
+    assert_nil nav[0]["children"]
+    refute_includes nav_titles, "Advanced"
+    refute_includes nav_titles, "Guides Home"
+  end
+
   def test_nav_feature_layout_renders_tree_breadcrumbs_and_neighbors
     site = process_site("nav_features")
     page = read_output(site, "docs/guides/install/index.html")
