@@ -1,0 +1,5 @@
+append_unmatched: true
+nav:
+  - Overview: index.md
+  - Writing Guides: configuration.md
+  - Deeper Navigation: advanced/overrides.md
