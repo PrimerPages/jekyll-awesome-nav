@@ -1,0 +1,9 @@
+append_unmatched: true
+nav:
+  - Overview: index.md
+  - Getting Started: getting-started.md
+  - Guides:
+      - Overview: guides/index.md
+      - Writing Guides: guides/configuration.md
+      - Deeper Navigation: guides/advanced/overrides.md
+  - Extracted Reference: src/extracted.md
