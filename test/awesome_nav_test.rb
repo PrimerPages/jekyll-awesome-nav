@@ -248,6 +248,16 @@ class AwesomeNavTest < Minitest::Test
     refute_includes nav.map { |item| item["title"] }, "Src"
   end
 
+  def test_root_index_reference_resolves_to_a_single_root_link
+    site = process_site("manual_dedup")
+    page = find_page(site, "site/index.md")
+    nav = page.data["awesome_nav"]
+    overview_items = nav.select { |item| item["title"] == "Overview" }
+
+    assert_equal 1, overview_items.length
+    assert_equal({ "title" => "Overview", "url" => "/site/" }, overview_items.first)
+  end
+
   def test_nav_feature_layout_renders_tree_breadcrumbs_and_neighbors
     site = process_site("nav_features")
     page = read_output(site, "docs/guides/install/index.html")
