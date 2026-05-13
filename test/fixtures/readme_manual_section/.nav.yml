@@ -1,0 +1,8 @@
+nav:
+  - README.md
+  - API Reference:
+      - semiliterate/cli.md
+      - semiliterate/config.md
+      - semiliterate/extractor.md
+      - semiliterate/materialize.md
+      - semiliterate/scanner.md

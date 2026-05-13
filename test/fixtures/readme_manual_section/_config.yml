@@ -1,0 +1,25 @@
+title: Readme Manual Section Fixture
+theme: jekyll-theme-profile
+permalink: pretty
+defaults:
+  - scope:
+      path: ""
+    values:
+      layout: "docs"
+      toc: true
+      index: "/"
+plugins:
+  - jekyll-awesome-nav
+  - jekyll-readme-index
+  - jekyll-optional-front-matter
+
+awesome_nav:
+  enabled: true
+  root: ""
+  nav_filename: .nav.yml
+
+readme_index:
+  remove_originals: true
+
+optional_front_matter:
+  remove_originals: true

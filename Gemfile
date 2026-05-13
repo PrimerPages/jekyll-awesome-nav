@@ -6,6 +6,7 @@ gemspec
 
 gem "jekyll", ENV["JEKYLL_VERSION"] if ENV["JEKYLL_VERSION"]
 
+gem "jekyll-optional-front-matter"
 gem "jekyll-readme-index"
 gem "jekyll-seo-tag"
 gem "jekyll-theme-profile"

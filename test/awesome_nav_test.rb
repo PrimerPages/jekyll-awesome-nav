@@ -218,6 +218,20 @@ class AwesomeNavTest < Minitest::Test
     assert_equal %w[Auth Users], appended_titles
   end
 
+  def test_readme_index_and_optional_front_matter_preserve_manual_root_section
+    site = process_site("readme_manual_section")
+    page = find_page(site, "README.md")
+    nav = page.data["awesome_nav"]
+    api_section = nav.find { |item| item["title"] == "API Reference" }
+    api_titles = api_section["children"].map { |item| item["title"] }
+
+    refute_nil page
+    assert_equal({ "title" => "README", "url" => "/" }, nav.first)
+    refute_nil api_section
+    assert_nil api_section["url"]
+    assert_equal %w[Cli Config Extractor Materialize Scanner], api_titles
+  end
+
   def test_append_unmatched_false_hides_omitted_generated_entries
     site = process_site("nav_features")
     page = find_page(site, "docs/guides/install.md")

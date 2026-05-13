@@ -75,7 +75,10 @@ module Jekyll
       end
 
       def same_dir_wrapper?(items, current_dir)
-        items.length == 1 && items.first.section? && Utils.normalize_dir(items.first.dir) == current_dir
+        items.length == 1 &&
+          items.first.section? &&
+          !items.first.dir.nil? &&
+          Utils.normalize_dir(items.first.dir) == current_dir
       end
 
       def raw_same_dir_wrapper?(current_dir)
@@ -415,7 +418,9 @@ module Jekyll
 
         normalized = Utils.normalize_dir(candidate)
         root_index_path = Utils.normalize_dir(File.join(@root_dir, "index.md"))
-        return nil unless [@root_dir, root_index_path, "index.md"].include?(normalized)
+        root_readme_path = Utils.normalize_dir(File.join(@root_dir, "README.md"))
+        root_readme_lower_path = Utils.normalize_dir(File.join(@root_dir, "readme.md"))
+        return nil unless [@root_dir, root_index_path, "index.md", root_readme_path, root_readme_lower_path].include?(normalized)
 
         Node.page(
           dir: @root_dir,
