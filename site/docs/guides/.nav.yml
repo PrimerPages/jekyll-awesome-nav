@@ -3,5 +3,6 @@ nav:
       - Install Guide: install.md
       - Layout Integration: layouts.md
       - Configuration: config.md
+      - .nav.yml Reference: nav-file.md
       - Navigation Overrides: overrides.md
       - Generated Data: data.md

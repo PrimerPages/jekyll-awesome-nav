@@ -22,6 +22,8 @@ Use `.nav.yml` when a section needs:
 - shorter or clearer labels
 - links that do not map one-to-one with filenames
 - a curated subset of pages
+- generated batches mixed with manual items
+- hidden sections or filtered globs
 
 ## What gets replaced
 
@@ -40,3 +42,15 @@ nav:
 ```
 
 Use Markdown source paths. The plugin resolves them through Jekyll pages and then uses the final page URL.
+
+## More options
+
+`.nav.yml` also supports:
+
+- glob entries like `"*.md"` and `"*/"`
+- `append_unmatched: true` to append generated items you did not list manually
+- `ignore:` to filter generated matches
+- `sort:` to order generated batches
+- `hide: true` to remove a subtree entirely
+
+The full syntax and option reference lives in [.nav.yml Reference]({{ "/docs/guides/nav-file/" | relative_url }}).

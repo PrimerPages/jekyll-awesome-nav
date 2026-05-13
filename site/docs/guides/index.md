@@ -11,5 +11,6 @@ The `docs/guides/.nav.yml` file replaces this subtree, which means the guides ca
 - [Install Guide]({{ "/docs/guides/install/" | relative_url }})
 - [Layout Integration]({{ "/docs/guides/layouts/" | relative_url }})
 - [Configuration]({{ "/docs/guides/config/" | relative_url }})
+- [.nav.yml Reference]({{ "/docs/guides/nav-file/" | relative_url }})
 - [Navigation Overrides]({{ "/docs/guides/overrides/" | relative_url }})
 - [Generated Data]({{ "/docs/guides/data/" | relative_url }})
