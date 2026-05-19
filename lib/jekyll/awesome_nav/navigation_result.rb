@@ -42,7 +42,7 @@ module Jekyll
 
       def breadcrumbs_for(page)
         page_url = Utils.normalize_url(page.url)
-        trail = find_trail(serialized_tree, page_url)
+        trail = find_trail(internal_serialized_tree, page_url)
         return root_breadcrumb(page) if trail.nil? && Utils.source_dir_for(page) == @root_dir && Utils.index_page?(page)
         return [] unless trail
 
@@ -51,11 +51,9 @@ module Jekyll
 
           crumb = { "title" => item["title"] }
           crumb["url"] = item["url"] if item["url"]
+          crumb["dir"] = item["__dir"] if item.key?("__dir")
           crumb
         end
-
-        breadcrumbs = trim_root_breadcrumb(breadcrumbs)
-        return breadcrumbs if @root_dir.empty?
 
         prepend_root_breadcrumb(breadcrumbs)
       end
@@ -65,6 +63,10 @@ module Jekyll
       end
 
       private
+
+      def internal_serialized_tree
+        @internal_serialized_tree ||= Serializer.serialize_tree(@tree, include_internal: true)
+      end
 
       def local_nav_nodes
         @local_nav_nodes ||= begin
@@ -87,15 +89,14 @@ module Jekyll
       end
 
       def root_breadcrumb(page)
-        title = page.data["nav_title"] || page.data["title"] || Utils.titleize(Utils.last_segment(@root_dir))
-        title = resolved_root_title if title.to_s.empty?
-        [{ "title" => title, "url" => Utils.normalize_url(page.url) }]
+        [{ "title" => root_breadcrumb_title, "url" => Utils.normalize_url(page.url), "dir" => @root_dir }]
       end
 
       def prepend_root_breadcrumb(breadcrumbs)
         root_crumb = {
-          "title" => resolved_root_title,
-          "url" => Utils.normalize_url(@root_page&.url || "/#{@root_dir}/")
+          "title" => root_breadcrumb_title,
+          "url" => Utils.normalize_url(@root_page&.url || "/#{@root_dir}/"),
+          "dir" => @root_dir
         }
 
         return [root_crumb] + breadcrumbs[1..] if same_breadcrumb_url?(breadcrumbs.first, root_crumb)
@@ -103,25 +104,12 @@ module Jekyll
         [root_crumb] + breadcrumbs
       end
 
-      def trim_root_breadcrumb(breadcrumbs)
-        return breadcrumbs if breadcrumbs.empty?
-
-        root_crumb = {
-          "title" => resolved_root_title,
-          "url" => Utils.normalize_url(@root_page&.url || "/#{@root_dir}/")
-        }
-
-        return breadcrumbs unless same_breadcrumb_url?(breadcrumbs.first, root_crumb)
-
-        breadcrumbs[1..] || []
-      end
-
       def neighbor_map
         @neighbor_map ||= begin
           items = []
           if @root_page
             items << {
-              "title" => resolved_root_title,
+              "title" => root_breadcrumb_title,
               "url" => Utils.normalize_url(@root_page.url)
             }
           end
@@ -166,6 +154,12 @@ module Jekyll
         return false unless left && right
 
         Utils.normalize_url(left["url"]) == Utils.normalize_url(right["url"])
+      end
+
+      def root_breadcrumb_title
+        return "home" if @root_dir.empty?
+
+        resolved_root_title
       end
 
       def resolved_root_title

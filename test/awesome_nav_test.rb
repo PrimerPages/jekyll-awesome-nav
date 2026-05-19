@@ -62,7 +62,7 @@ class AwesomeNavTest < Minitest::Test
     root_page = find_page(site, "docs/index.md")
 
     refute_nil root_page
-    assert_equal [{ "title" => "Documentation", "url" => "/docs/" }], root_page.data["breadcrumbs"]
+    assert_equal [{ "title" => "Documentation", "url" => "/docs/", "dir" => "docs" }], root_page.data["breadcrumbs"]
     assert_nil root_page.data["awesome_nav_previous"]
     assert_equal({ "title" => "Guides", "url" => "/docs/guides/" }, root_page.data["awesome_nav_next"])
   end
@@ -142,12 +142,13 @@ class AwesomeNavTest < Minitest::Test
     refute_includes page.data["breadcrumbs"].map { |item| item["title"] }, ""
   end
 
-  def test_empty_root_nested_pages_do_not_include_root_readme_in_breadcrumbs
+  def test_empty_root_nested_pages_include_home_breadcrumb
     site = process_site("readme_index")
     page = find_page(site, "ros2/README.md")
 
     refute_nil page
-    assert_equal(["Ros2"], page.data["breadcrumbs"].map { |item| item["title"] })
+    assert_equal(%w[home Ros2], page.data["breadcrumbs"].map { |item| item["title"] })
+    assert_equal(["", "ros2"], page.data["breadcrumbs"].map { |item| item["dir"] })
   end
 
   def test_readme_index_pages_render_as_section_links_not_nested_readme_children
@@ -166,7 +167,7 @@ class AwesomeNavTest < Minitest::Test
     page = find_page(site, "docker-compose/README.md")
 
     refute_nil page
-    assert_equal({ "title" => "README", "url" => "/" }, page.data["awesome_nav_previous"])
+    assert_equal({ "title" => "home", "url" => "/" }, page.data["awesome_nav_previous"])
   end
 
   def test_untitled_index_pages_use_their_folder_name_for_titles
@@ -176,6 +177,7 @@ class AwesomeNavTest < Minitest::Test
     refute_nil install_page
     assert_equal(["Guides"], install_page.data["awesome_nav"].map { |item| item["title"] })
     assert_equal(%w[Docs Guides Install], install_page.data["breadcrumbs"].map { |item| item["title"] })
+    assert_equal(["docs", "docs/guides", "docs/guides/install"], install_page.data["breadcrumbs"].map { |item| item["dir"] })
   end
 
   def test_directory_insertion_globs_and_append_unmatched
