@@ -6,6 +6,7 @@ gemspec
 
 gem "jekyll", ENV["JEKYLL_VERSION"] if ENV["JEKYLL_VERSION"]
 
+gem "jekyll-awesome-nav-preview-theme", path: "test/fixtures/_preview_theme"
 gem "jekyll-optional-front-matter"
 gem "jekyll-readme-index"
 gem "jekyll-seo-tag"

@@ -1,0 +1,7 @@
+theme: jekyll-awesome-nav-preview-theme
+
+defaults:
+  - scope:
+      path: ""
+    values:
+      layout: fixture_preview
