@@ -1,0 +1,9 @@
+title: Untitled Index Fixture
+permalink: pretty
+plugins:
+  - jekyll-awesome-nav
+  - jekyll-optional-front-matter
+awesome_nav:
+  enabled: true
+  root: docs
+  nav_filename: .nav.yml

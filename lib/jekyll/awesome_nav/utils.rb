@@ -90,8 +90,17 @@ module Jekyll
         normalize_dir(path)
       end
 
-      def page_title(page, basename)
-        page.data["nav_title"] || page.data["title"] || titleize(basename)
+      def page_title(page, basename = nil)
+        explicit_title = page.data["nav_title"] || page.data["title"]
+        return explicit_title if explicit_title
+
+        if index_page?(page)
+          directory_title = titleize(last_segment(source_dir_for(page)))
+          return directory_title unless directory_title.empty?
+        end
+
+        basename ||= File.basename(source_path_for(page), File.extname(source_path_for(page)))
+        titleize(basename)
       end
     end
   end
