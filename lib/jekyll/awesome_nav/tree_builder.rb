@@ -63,8 +63,7 @@ module Jekyll
         end
       end
 
-      def section_title_for_index(page, basename, current, resolved_title)
-        return resolved_title unless basename.downcase == "readme"
+      def section_title_for_index(page, _basename, current, resolved_title)
         return resolved_title if page.data["nav_title"] || page.data["title"]
         return current.title unless current.title.to_s.empty?
 

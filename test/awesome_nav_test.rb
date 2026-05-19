@@ -169,6 +169,15 @@ class AwesomeNavTest < Minitest::Test
     assert_equal({ "title" => "README", "url" => "/" }, page.data["awesome_nav_previous"])
   end
 
+  def test_untitled_index_pages_use_their_folder_name_for_titles
+    site = process_site("untitled_index")
+    install_page = find_page(site, "docs/guides/install.md")
+
+    refute_nil install_page
+    assert_equal(["Guides"], install_page.data["awesome_nav"].map { |item| item["title"] })
+    assert_equal(%w[Docs Guides Install], install_page.data["breadcrumbs"].map { |item| item["title"] })
+  end
+
   def test_directory_insertion_globs_and_append_unmatched
     site = process_site("nav_features")
     page = find_page(site, "docs/getting-started.md")
