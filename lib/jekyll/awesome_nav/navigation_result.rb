@@ -54,6 +54,9 @@ module Jekyll
           crumb
         end
 
+        breadcrumbs = trim_root_breadcrumb(breadcrumbs)
+        return breadcrumbs if @root_dir.empty?
+
         prepend_root_breadcrumb(breadcrumbs)
       end
 
@@ -95,9 +98,22 @@ module Jekyll
           "url" => Utils.normalize_url(@root_page&.url || "/#{@root_dir}/")
         }
 
-        return breadcrumbs if breadcrumbs.first == root_crumb
+        return [root_crumb] + breadcrumbs[1..] if same_breadcrumb_url?(breadcrumbs.first, root_crumb)
 
         [root_crumb] + breadcrumbs
+      end
+
+      def trim_root_breadcrumb(breadcrumbs)
+        return breadcrumbs if breadcrumbs.empty?
+
+        root_crumb = {
+          "title" => resolved_root_title,
+          "url" => Utils.normalize_url(@root_page&.url || "/#{@root_dir}/")
+        }
+
+        return breadcrumbs unless same_breadcrumb_url?(breadcrumbs.first, root_crumb)
+
+        breadcrumbs[1..] || []
       end
 
       def neighbor_map
@@ -144,6 +160,12 @@ module Jekyll
 
       def deep_copy(value)
         Marshal.load(Marshal.dump(value))
+      end
+
+      def same_breadcrumb_url?(left, right)
+        return false unless left && right
+
+        Utils.normalize_url(left["url"]) == Utils.normalize_url(right["url"])
       end
 
       def resolved_root_title
