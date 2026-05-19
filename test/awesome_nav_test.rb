@@ -142,6 +142,14 @@ class AwesomeNavTest < Minitest::Test
     refute_includes page.data["breadcrumbs"].map { |item| item["title"] }, ""
   end
 
+  def test_empty_root_nested_pages_do_not_include_root_readme_in_breadcrumbs
+    site = process_site("readme_index")
+    page = find_page(site, "ros2/README.md")
+
+    refute_nil page
+    assert_equal(["Ros2"], page.data["breadcrumbs"].map { |item| item["title"] })
+  end
+
   def test_readme_index_pages_render_as_section_links_not_nested_readme_children
     site = process_site("readme_index")
     page = find_page(site, "ros2/README.md")
