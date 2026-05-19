@@ -18,7 +18,7 @@ module Jekyll
         item = { "title" => node.title }
         item["url"] = node.url if node.url
         item["children"] = serialize_tree(node.children, include_internal: include_internal) if node.section? && node.children.any?
-        item["__dir"] = node.dir if include_internal && node.dir
+        item["__dir"] = node.dir if include_internal && !node.dir.nil?
         item
       end
     end

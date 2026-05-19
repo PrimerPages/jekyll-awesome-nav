@@ -318,10 +318,7 @@
         const list = document.getElementById("breadcrumbs");
         list.innerHTML = "";
 
-        const home = { title: "Home", url: "/" };
-        const trail = [home].concat(
-          (Array.isArray(items) ? items : []).filter((item) => !(item && item.url === "/"))
-        );
+        const trail = Array.isArray(items) ? items : [];
 
         trail.forEach((item, index) => {
           const li = document.createElement("li");
