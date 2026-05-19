@@ -65,6 +65,58 @@
           "endsPattern": ".*Server address:.*"
         }
       }
+    },
+    {
+      "label": "Build Fixture Preview",
+      "type": "shell",
+      "command": "bundle exec jekyll build --source test/fixtures/${input:fixtureName} --config test/fixtures/${input:fixtureName}/_config.yml,test/fixtures/_preview_theme/_config.preview.yml --destination _site/fixtures/${input:fixtureName}",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "group": "build",
+      "problemMatcher": []
+    },
+    {
+      "label": "Serve Fixture Preview",
+      "type": "shell",
+      "command": "bundle exec jekyll serve --source test/fixtures/${input:fixtureName} --config test/fixtures/${input:fixtureName}/_config.yml,test/fixtures/_preview_theme/_config.preview.yml --destination _site/fixtures/${input:fixtureName} --livereload --port 4011",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "isBackground": true,
+      "problemMatcher": {
+        "owner": "jekyll",
+        "pattern": {
+          "regexp": ".",
+          "file": 1,
+          "location": 1,
+          "message": 1
+        },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": ".*Generating.*",
+          "endsPattern": ".*Server address:.*"
+        }
+      }
+    }
+  ],
+  "inputs": [
+    {
+      "id": "fixtureName",
+      "type": "pickString",
+      "description": "Choose which Jekyll fixture to preview",
+      "default": "site",
+      "options": [
+        "external_override",
+        "invalid_override",
+        "manual_dedup",
+        "nav_features",
+        "nested_manual_dedup",
+        "readme_index",
+        "readme_manual_section",
+        "root_site",
+        "site"
+      ]
     }
   ]
 }
