@@ -231,6 +231,36 @@ class AwesomeNavInternalTest < Minitest::Test
     )
   end
 
+  def test_navigation_result_annotates_tree_with_contains_current
+    site = process_site
+    config = Jekyll::AwesomeNav::Config.new(site.config["awesome_nav"])
+    pages = Jekyll::AwesomeNav::PageSet.new(site, config)
+    tree = Jekyll::AwesomeNav::TreeBuilder.new(pages: pages, root_dir: config.root_dir).build
+    nav_map = Jekyll::AwesomeNav::NavFileLoader.new(site: site, config: config).load
+    resolved_tree = Jekyll::AwesomeNav::NavResolver.new(
+      root_dir: config.root_dir,
+      nav_map: nav_map,
+      root_page: pages.root_page
+    ).apply(tree, config.root_dir)
+    result = Jekyll::AwesomeNav::NavigationResult.new(
+      tree: resolved_tree,
+      root_dir: config.root_dir,
+      root_page: pages.root_page,
+      nav_map: nav_map
+    )
+
+    nav = result.annotated_tree_for("/docs/guides/install/")
+
+    assert_equal false, nav[0]["current"]
+    assert_equal true, nav[0]["contains_current"]
+    assert_equal true, nav[0]["children"][0]["current"]
+    assert_equal true, nav[0]["children"][0]["contains_current"]
+    assert_equal false, nav[0]["children"][1]["current"]
+    assert_equal false, nav[0]["children"][1]["contains_current"]
+    assert_equal false, nav[1]["current"]
+    assert_equal false, nav[1]["contains_current"]
+  end
+
   private
 
   def nav_file(items)

@@ -65,10 +65,10 @@ awesome_nav:
 
 Each page under the configured root receives:
 
-- `page.awesome_nav`: the full navigation tree rooted at `awesome_nav.root`
+- `page.awesome_nav`: the full navigation tree rooted at `awesome_nav.root`, annotated with `current` and `contains_current`
 - `page.awesome_nav_local`: the local subtree for the page's directory
 - `page.awesome_nav_dir`: the directory supplying the active nav context
-- `page.breadcrumbs`: breadcrumb items derived from the final tree
+- `page.breadcrumbs`: lightweight breadcrumb items with `title` and `url`
 - `page.awesome_nav_previous`: the previous linked nav item, when one exists
 - `page.awesome_nav_next`: the next linked nav item, when one exists
 

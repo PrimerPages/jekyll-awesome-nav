@@ -46,14 +46,17 @@ The plugin writes breadcrumbs to `page.breadcrumbs`.
 
 ## Render a sidebar
 
-Use `page.awesome_nav` for the full docs tree:
+Use `page.awesome_nav` for the full docs tree. Each item includes `current` for the exact page match and `contains_current` for the active branch:
 
 ```liquid
 {% raw %}<nav aria-label="Documentation">
   <ul>
     {% for item in page.awesome_nav %}
       <li>
-        <a href="{{ item.url | relative_url }}">{{ item.title }}</a>
+        <a href="{{ item.url | relative_url }}"{% if item.current %} aria-current="page"{% endif %}>{{ item.title }}</a>
+        {% if item.contains_current %}
+          <span class="visually-hidden">(current section)</span>
+        {% endif %}
         {% if item.children %}
           <ul>
             {% for child in item.children %}
