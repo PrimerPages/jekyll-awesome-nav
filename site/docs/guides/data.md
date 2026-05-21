@@ -8,10 +8,10 @@ The plugin writes navigation data onto each page under the configured docs root.
 
 | Variable | Description |
 | --- | --- |
-| `page.awesome_nav` | Full resolved docs tree. |
+| `page.awesome_nav` | Full resolved docs tree with `current` and `contains_current` state for rendering. |
 | `page.awesome_nav_local` | Navigation items for the current directory context. |
 | `page.awesome_nav_dir` | Directory that supplied the current local nav context. |
-| `page.breadcrumbs` | Breadcrumb entries for the current page. |
+| `page.breadcrumbs` | Lightweight breadcrumb entries for the current page. |
 | `page.awesome_nav_previous` | Previous page in the resolved navigation order. |
 | `page.awesome_nav_next` | Next page in the resolved navigation order. |
 
@@ -19,15 +19,24 @@ For README-indexed directories, these values are computed using the directory in
 
 ## Tree item shape
 
-Navigation entries are hashes with a title, URL, and optional children:
+Navigation entries are hashes with a title, URL, optional children, and current-state flags:
 
 ```yaml
 title: Install Guide
 url: /docs/guides/install/
+current: true
+contains_current: true
 children: []
 ```
 
 Layouts should treat `children` as optional because leaf pages do not need nested items.
+
+Breadcrumb items stay lightweight and only expose:
+
+```yaml
+title: Install Guide
+url: /docs/guides/install/
+```
 
 ## Site variables
 

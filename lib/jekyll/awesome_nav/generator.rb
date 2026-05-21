@@ -46,7 +46,7 @@ module Jekyll
           page_url = Utils.normalize_url(page.url)
           page_entry = result.nav_entry_for(page_url)
 
-          page.data["awesome_nav"] = deep_copy(result.serialized_tree)
+          page.data["awesome_nav"] = deep_copy(result.annotated_tree_for(page_url))
           page.data["awesome_nav_local"] = deep_copy(result.local_nav_for(nav_dir))
           page.data["awesome_nav_dir"] = nav_dir
           page.data["breadcrumbs"] = result.breadcrumbs_for(page)

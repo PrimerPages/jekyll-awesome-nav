@@ -239,6 +239,63 @@ layout: default
     margin-top: 1.25rem;
   }
 
+  .awesome-nav-demo__debug {
+    margin-top: 1.5rem;
+  }
+
+  .awesome-nav-demo__debug details {
+    border-radius: 1.25rem;
+    overflow: hidden;
+  }
+
+  .awesome-nav-demo__debug summary {
+    align-items: center;
+    cursor: pointer;
+    display: flex;
+    font-weight: 800;
+    gap: 0.75rem;
+    justify-content: space-between;
+    list-style: none;
+    padding: 1rem 1.15rem;
+  }
+
+  .awesome-nav-demo__debug summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .awesome-nav-demo__debug-summary-copy {
+    font-size: 0.82rem;
+    font-weight: 600;
+    opacity: 0.82;
+  }
+
+  .awesome-nav-demo__debug-grid {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+    padding: 0 1rem 1rem;
+  }
+
+  .awesome-nav-demo__debug-card {
+    border-radius: 1rem;
+    min-width: 0;
+    padding: 0.9rem;
+  }
+
+  .awesome-nav-demo__debug-card h2 {
+    font-size: 0.95rem;
+    margin: 0 0 0.65rem;
+  }
+
+  .awesome-nav-demo__debug-card pre {
+    font-size: 0.78rem;
+    line-height: 1.5;
+    margin: 0;
+    overflow: auto;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+
   .awesome-nav-demo__pager a {
     border-radius: 1.25rem;
     display: flex;
@@ -364,6 +421,47 @@ layout: default
       <article class="awesome-nav-demo__content markdown-body">
         {{ content | inject_anchors }}
       </article>
+
+      <section class="awesome-nav-demo__debug" aria-label="Plugin debug data">
+        <details>
+          <summary>
+            <span>Plugin data</span>
+            <span class="awesome-nav-demo__debug-summary-copy">Resolved page variables for this page</span>
+          </summary>
+
+          <div class="awesome-nav-demo__debug-grid">
+            <section class="awesome-nav-demo__debug-card">
+              <h2><code>page.breadcrumbs</code></h2>
+              <pre>{{ page.breadcrumbs | jsonify }}</pre>
+            </section>
+
+            <section class="awesome-nav-demo__debug-card">
+              <h2><code>page.awesome_nav</code></h2>
+              <pre>{{ page.awesome_nav | jsonify }}</pre>
+            </section>
+
+            <section class="awesome-nav-demo__debug-card">
+              <h2><code>page.awesome_nav_local</code></h2>
+              <pre>{{ page.awesome_nav_local | jsonify }}</pre>
+            </section>
+
+            <section class="awesome-nav-demo__debug-card">
+              <h2><code>page.awesome_nav_dir</code></h2>
+              <pre>{{ page.awesome_nav_dir | jsonify }}</pre>
+            </section>
+
+            <section class="awesome-nav-demo__debug-card">
+              <h2><code>page.awesome_nav_previous</code></h2>
+              <pre>{{ page.awesome_nav_previous | jsonify }}</pre>
+            </section>
+
+            <section class="awesome-nav-demo__debug-card">
+              <h2><code>page.awesome_nav_next</code></h2>
+              <pre>{{ page.awesome_nav_next | jsonify }}</pre>
+            </section>
+          </div>
+        </details>
+      </section>
 
       {% if previous_item or next_item %}
         <nav class="awesome-nav-demo__pager" aria-label="Pagination">

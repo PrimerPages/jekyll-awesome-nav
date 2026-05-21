@@ -3,7 +3,7 @@
 require "json"
 require_relative "test_helper"
 
-class AwesomeNavTest < Minitest::Test
+module AwesomeNavTestHelpers
   WarningLogger = Struct.new(:warnings) do
     def warn(topic, message)
       warnings << [topic, message]
@@ -18,6 +18,23 @@ class AwesomeNavTest < Minitest::Test
     end
   end
 
+  private
+
+  def read_output(site, relative_path)
+    File.read(File.join(site.dest, relative_path))
+  end
+
+  def json_script(html, id)
+    match = html.match(%r{<div id="#{Regexp.escape(id)}">(.*?)</div>}m)
+    refute_nil match, "Expected rendered JSON fixture ##{id}"
+
+    JSON.parse(match[1])
+  end
+end
+
+class AwesomeNavCoreTest < Minitest::Test
+  include AwesomeNavTestHelpers
+
   def test_generates_full_tree_with_expected_data_keys
     site = process_site
     install_page = find_page(site, "docs/guides/install.md")
@@ -30,10 +47,25 @@ class AwesomeNavTest < Minitest::Test
     assert install_page.data.key?("awesome_nav_next")
 
     nav = install_page.data["awesome_nav"]
-    assert_equal(["Guides", "Getting Started"], nav.map { |item| item["title"] })
-    assert_equal "/docs/guides/", nav.first["url"]
-    assert_equal(["Install Guide", "Configuration"], nav.first["children"].map { |item| item["title"] })
-    assert_equal "/docs/guides/config/", nav.first["children"][1]["url"]
+    current_branch = nav.first
+    sibling_branch = nav[1]
+    current_leaf = current_branch["children"][0]
+    sibling_leaf = current_branch["children"][1]
+    nav_titles = nav.map { |item| item["title"] }
+    child_titles = current_branch["children"].map { |item| item["title"] }
+
+    assert_equal ["Guides", "Getting Started"], nav_titles
+    assert_equal "/docs/guides/", current_branch["url"]
+    assert_equal false, current_branch["current"]
+    assert_equal true, current_branch["contains_current"]
+    assert_equal false, sibling_branch["current"]
+    assert_equal false, sibling_branch["contains_current"]
+    assert_equal ["Install Guide", "Configuration"], child_titles
+    assert_equal "/docs/guides/config/", sibling_leaf["url"]
+    assert_equal true, current_leaf["current"]
+    assert_equal true, current_leaf["contains_current"]
+    assert_equal false, sibling_leaf["current"]
+    assert_equal false, sibling_leaf["contains_current"]
     assert_equal({ "title" => "Guides", "url" => "/docs/guides/" }, install_page.data["awesome_nav_previous"])
     assert_equal({ "title" => "Configuration", "url" => "/docs/guides/config/" }, install_page.data["awesome_nav_next"])
   end
@@ -62,7 +94,7 @@ class AwesomeNavTest < Minitest::Test
     root_page = find_page(site, "docs/index.md")
 
     refute_nil root_page
-    assert_equal [{ "title" => "Documentation", "url" => "/docs/", "dir" => "docs" }], root_page.data["breadcrumbs"]
+    assert_equal [{ "title" => "Documentation", "url" => "/docs/" }], root_page.data["breadcrumbs"]
     assert_nil root_page.data["awesome_nav_previous"]
     assert_equal({ "title" => "Guides", "url" => "/docs/guides/" }, root_page.data["awesome_nav_next"])
   end
@@ -148,7 +180,6 @@ class AwesomeNavTest < Minitest::Test
 
     refute_nil page
     assert_equal(%w[home Ros2], page.data["breadcrumbs"].map { |item| item["title"] })
-    assert_equal(["", "ros2"], page.data["breadcrumbs"].map { |item| item["dir"] })
   end
 
   def test_readme_index_pages_render_as_section_links_not_nested_readme_children
@@ -177,7 +208,21 @@ class AwesomeNavTest < Minitest::Test
     refute_nil install_page
     assert_equal(["Guides"], install_page.data["awesome_nav"].map { |item| item["title"] })
     assert_equal(%w[Docs Guides Install], install_page.data["breadcrumbs"].map { |item| item["title"] })
-    assert_equal(["docs", "docs/guides", "docs/guides/install"], install_page.data["breadcrumbs"].map { |item| item["dir"] })
+  end
+
+  def test_breadcrumbs_only_expose_title_and_url
+    site = process_site
+    install_page = find_page(site, "docs/guides/install.md")
+
+    refute_nil install_page
+    assert_equal(
+      [
+        { "title" => "Documentation", "url" => "/docs/" },
+        { "title" => "Guides", "url" => "/docs/guides/" },
+        { "title" => "Install Guide", "url" => "/docs/guides/install/" }
+      ],
+      install_page.data["breadcrumbs"]
+    )
   end
 
   def test_directory_insertion_globs_and_append_unmatched
@@ -236,6 +281,10 @@ class AwesomeNavTest < Minitest::Test
     assert_equal "/docs/api/", nav.last["url"]
     assert_equal %w[Auth Users], appended_titles
   end
+end
+
+class AwesomeNavRenderingTest < Minitest::Test
+  include AwesomeNavTestHelpers
 
   def test_readme_index_and_optional_front_matter_preserve_manual_root_section
     site = process_site("readme_manual_section")
@@ -243,9 +292,15 @@ class AwesomeNavTest < Minitest::Test
     nav = page.data["awesome_nav"]
     api_section = nav.find { |item| item["title"] == "API Reference" }
     api_titles = api_section["children"].map { |item| item["title"] }
+    expected_root_item = {
+      "title" => "README",
+      "url" => "/",
+      "current" => true,
+      "contains_current" => true
+    }
 
     refute_nil page
-    assert_equal({ "title" => "README", "url" => "/" }, nav.first)
+    assert_equal expected_root_item, nav.first
     refute_nil api_section
     assert_nil api_section["url"]
     assert_equal %w[Cli Config Extractor Materialize Scanner], api_titles
@@ -286,9 +341,15 @@ class AwesomeNavTest < Minitest::Test
     page = find_page(site, "site/index.md")
     nav = page.data["awesome_nav"]
     overview_items = nav.select { |item| item["title"] == "Overview" }
+    expected_overview_item = {
+      "title" => "Overview",
+      "url" => "/site/",
+      "current" => true,
+      "contains_current" => true
+    }
 
     assert_equal 1, overview_items.length
-    assert_equal({ "title" => "Overview", "url" => "/site/" }, overview_items.first)
+    assert_equal expected_overview_item, overview_items.first
   end
 
   def test_explicit_item_is_not_duplicated_by_glob_match
@@ -296,9 +357,15 @@ class AwesomeNavTest < Minitest::Test
     page = find_page(site, "docs/getting-started.md")
     nav = page.data["awesome_nav"]
     getting_started_items = nav.select { |item| item["title"] == "Getting Started" }
+    expected_item = {
+      "title" => "Getting Started",
+      "url" => "/docs/getting-started/",
+      "current" => true,
+      "contains_current" => true
+    }
 
     assert_equal 1, getting_started_items.length
-    assert_equal({ "title" => "Getting Started", "url" => "/docs/getting-started/" }, getting_started_items.first)
+    assert_equal expected_item, getting_started_items.first
   end
 
   def test_nested_nav_index_reference_resolves_without_duplicate_generated_items
@@ -349,18 +416,5 @@ class AwesomeNavTest < Minitest::Test
     assert_equal ["Documentation", "Getting Started"], breadcrumb_titles
     assert_equal({ "title" => "Documentation", "url" => "/docs/" }, previous_item)
     assert_equal({ "title" => "Explicit Hidden", "url" => "/docs/explicit.hidden/" }, next_item)
-  end
-
-  private
-
-  def read_output(site, relative_path)
-    File.read(File.join(site.dest, relative_path))
-  end
-
-  def json_script(html, id)
-    match = html.match(%r{<div id="#{Regexp.escape(id)}">(.*?)</div>}m)
-    refute_nil match, "Expected rendered JSON fixture ##{id}"
-
-    JSON.parse(match[1])
   end
 end

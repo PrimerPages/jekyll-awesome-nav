@@ -14,6 +14,10 @@ module Jekyll
         @serialized_tree ||= Serializer.serialize_tree(@tree)
       end
 
+      def annotated_tree_for(page_url)
+        annotate_current(serialized_tree, Utils.normalize_url(page_url)).first
+      end
+
       def serialized_local_nav_map
         @serialized_local_nav_map ||= Serializer.serialize_map(local_nav_nodes)
       end
@@ -46,14 +50,7 @@ module Jekyll
         return root_breadcrumb(page) if trail.nil? && Utils.source_dir_for(page) == @root_dir && Utils.index_page?(page)
         return [] unless trail
 
-        breadcrumbs = trail.filter_map do |item|
-          next if item["title"].to_s.empty?
-
-          crumb = { "title" => item["title"] }
-          crumb["url"] = item["url"] if item["url"]
-          crumb["dir"] = item["__dir"] if item.key?("__dir")
-          crumb
-        end
+        breadcrumbs = trail.filter_map { |item| breadcrumb_item_for(item) }
 
         prepend_root_breadcrumb(breadcrumbs)
       end
@@ -89,14 +86,13 @@ module Jekyll
       end
 
       def root_breadcrumb(page)
-        [{ "title" => root_breadcrumb_title, "url" => Utils.normalize_url(page.url), "dir" => @root_dir }]
+        [{ "title" => root_breadcrumb_title, "url" => Utils.normalize_url(page.url) }]
       end
 
       def prepend_root_breadcrumb(breadcrumbs)
         root_crumb = {
           "title" => root_breadcrumb_title,
-          "url" => Utils.normalize_url(@root_page&.url || "/#{@root_dir}/"),
-          "dir" => @root_dir
+          "url" => Utils.normalize_url(@root_page&.url || "/#{@root_dir}/")
         }
 
         return [root_crumb] + breadcrumbs[1..] if same_breadcrumb_url?(breadcrumbs.first, root_crumb)
@@ -144,6 +140,36 @@ module Jekyll
         end
 
         nil
+      end
+
+      def annotate_current(items, target_url)
+        annotated_items = Array(items).map do |item|
+          annotated_children, child_contains_current = annotate_current(item["children"], target_url)
+          current = current_item?(item, target_url)
+          contains_current = child_contains_current || current
+
+          annotated_item = deep_copy(item)
+          annotated_item["current"] = current
+          annotated_item["contains_current"] = contains_current
+          annotated_item["children"] = annotated_children if annotated_item["children"].is_a?(Array)
+          annotated_item
+        end
+
+        [annotated_items, annotated_items.any? { |item| item["contains_current"] }]
+      end
+
+      def breadcrumb_item_for(item)
+        return if item["title"].to_s.empty?
+
+        crumb = { "title" => item["title"] }
+        crumb["url"] = item["url"] if item["url"]
+        crumb
+      end
+
+      def current_item?(item, target_url)
+        return false unless item["url"]
+
+        Utils.normalize_url(item["url"]) == target_url
       end
 
       def deep_copy(value)
