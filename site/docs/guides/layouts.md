@@ -37,7 +37,13 @@ The plugin writes breadcrumbs to `page.breadcrumbs`.
 <nav aria-label="Breadcrumbs">
   <ol>
     {% for item in page.breadcrumbs %}
-      <li><a href="{{ item.url | relative_url }}">{{ item.title }}</a></li>
+      <li>
+        {% if item.url %}
+          <a href="{{ item.url | relative_url }}">{{ item.title }}</a>
+        {% else %}
+          <span>{{ item.title }}</span>
+        {% endif %}
+      </li>
     {% endfor %}
   </ol>
 </nav>
