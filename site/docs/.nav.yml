@@ -1,0 +1,7 @@
+nav:
+  - Getting Started: getting-started.md
+  - guides
+  - Examples:
+    - Examples Home: examples/index.md
+    - Basic Folder Navigation: examples/basic-folder-navigation.md
+    - Local Override: examples/local-override.md

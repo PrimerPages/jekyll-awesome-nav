@@ -9,6 +9,7 @@ The plugin does not require collections. It reads pages under the configured `aw
 ## Start here
 
 - [Getting Started]({{ "/docs/getting-started/" | relative_url }}) shows the minimum install and config.
+- [Examples]({{ "/docs/examples/" | relative_url }}) shows a few concrete folder and `.nav.yml` setups.
 - [Layout Integration]({{ "/docs/guides/layouts/" | relative_url }}) shows how to render sidebars, breadcrumbs, and previous/next links.
 - [Configuration]({{ "/docs/guides/config/" | relative_url }}) explains the available plugin settings.
 - [.nav.yml Reference]({{ "/docs/guides/nav-file/" | relative_url }}) documents override syntax, options, and common patterns.
@@ -22,6 +23,10 @@ This documentation site uses a plain `docs/` folder:
 ```text
 docs/
 ├── index.md
+├── examples/
+│   ├── index.md
+│   ├── basic-folder-navigation.md
+│   └── local-override.md
 ├── getting-started.md
 └── guides/
     ├── index.md

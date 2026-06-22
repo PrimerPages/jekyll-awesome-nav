@@ -31,7 +31,7 @@ children: []
 
 Layouts should treat `children` as optional because leaf pages do not need nested items.
 
-Breadcrumb items stay lightweight and only expose:
+Breadcrumb items stay lightweight. Linked entries include `url`; grouping entries may only include `title`:
 
 ```yaml
 title: Install Guide
