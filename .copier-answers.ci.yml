@@ -1,10 +1,12 @@
 # Changes here will be overwritten by Copier; NEVER EDIT MANUALLY
-_commit: v0.7.0-2-g302b8b3
+_commit: v0.7.0-3-g7e5e928
 _src_path: gh:athackst/ci
-automerge_mode: poll
+automerge_mode: native
 do_releases: true
 release_template: '## What''s changed
 
 
-    $CHANGES '
+    $CHANGES
+
+    '
 site_generator: none

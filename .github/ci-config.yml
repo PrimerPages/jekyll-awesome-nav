@@ -6,7 +6,8 @@ tag-template: "v$RESOLVED_VERSION"
 template: |
   ## What's changed
 
-  $CHANGES 
+  $CHANGES
+
 categories:
   - type: pre-exclude
     when:
