@@ -89,6 +89,19 @@ jobs:
   ci_success:
     runs-on: ubuntu-latest
     needs: [lint, test, integration]
+    if: ${{ always() }}
     steps:
       - name: Confirm all dependencies succeeded
-        run: echo "All matrix and lint tests passed successfully."
+        shell: bash
+        run: |
+          if [[ "${{ needs.lint.result }}" != "success" || \
+                "${{ needs.test.result }}" != "success" || \
+                "${{ needs.integration.result }}" != "success" ]]; then
+            echo "One or more required jobs did not succeed."
+            echo "lint:        ${{ needs.lint.result }}"
+            echo "test:        ${{ needs.test.result }}"
+            echo "integration: ${{ needs.integration.result }}"
+            exit 1
+          fi
+  
+          echo "All required jobs passed successfully."
